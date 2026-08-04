@@ -1,0 +1,88 @@
+---
+/*
+ * Список пилюль-контактов. Единственное место, где рисуется разметка пилюли —
+ * шапка (Header.astro) и подвал (Footer.astro) используют этот компонент,
+ * не дублируя вёрстку (DESIGN.md §3 «Контакты — один источник»).
+ *
+ * Шрифт, цвет текста и подчёркивание на hover/focus пилюля наследует от
+ * глобального стиля `a` в typography.css — там же зафиксировано, что пилюли
+ * сейчас единственные ссылки в макете. Здесь только то, что не покрыто
+ * глобальным стилем: форма пилюли и фон.
+ */
+import { contacts } from '../data/contacts.ts';
+---
+
+<ul class="contact-pills">
+	{contacts.map((contact) => (
+		<li class="contact-pills__item">
+			<a
+				class="contact-pill"
+				href={contact.href}
+				target={contact.external ? '_blank' : undefined}
+				rel={contact.external ? 'noopener noreferrer' : undefined}
+			>
+				<span class="contact-pill__label">{contact.label}</span>
+				<svg
+					class="contact-pill__icon"
+					width="16"
+					height="16"
+					viewBox="0 0 16 16"
+					aria-hidden="true"
+					focusable="false"
+				>
+					<path
+						d="M4 12L12 4M8 4H12V8"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.5"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					></path>
+				</svg>
+				{contact.external && <span class="visually-hidden">(откроется в новом окне)</span>}
+			</a>
+		</li>
+	))}
+</ul>
+
+<style>
+	.contact-pills {
+		display: flex;
+		align-items: center;
+		/* 8px — DESIGN.md не задаёт зазор между пилюлями; инженерный дефолт на базовой единице,
+		   по образцу решения из P4-T2 для роли «абзац». */
+		gap: calc(var(--space-unit) * 2);
+	}
+
+	.contact-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px; /* DESIGN.md §2 «Прочее»: отбивка иконки-стрелки от текста — флекс-отступом, не пробелом в разметке (compressHTML: 'jsx') */
+		height: 37px; /* DESIGN.md §2 «Скругления»: высота пилюли контакта */
+		/* 16px горизонтальный внутренний отступ — не задан в DESIGN.md, инженерный дефолт на базовой единице */
+		padding-inline: calc(var(--space-unit) * 4);
+		border-radius: var(--radius-pill);
+		background-color: var(--color-pill-bg);
+	}
+
+	.contact-pill:focus-visible {
+		outline: 2px solid var(--color-text);
+		outline-offset: 2px;
+	}
+
+	.contact-pill__icon {
+		flex-shrink: 0;
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+</style>

@@ -1,38 +1,30 @@
 ---
-import '../styles/tokens.css';
-import '../styles/reset.css';
-import '../styles/typography.css';
-import '../styles/layout.css';
+/*
+ * Главная. Реальный герой и лента кейсов — задачи P5-T2/P5-T3, отдельными
+ * чатами. Пока сохранены образцы типографики из Ф4: они уже дают ровно один
+ * H1 и иерархию заголовков без пропусков, чего достаточно для проверки
+ * шапки/подвала в этой карточке.
+ */
+import Base from '../layouts/Base.astro';
 ---
 
-<html lang="ru">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Дизайн-система — тестовая страница (Ф4)</title>
-	</head>
-	<body>
-		<main class="container">
-			<h1>Кирилл Колобанов</h1>
-			<h2>UX/UI дизайнер, 3 года опыта</h2>
-			<h3>Заголовок кейса</h3>
-			<h4>2026</h4>
-			<h5>Подзаголовок кейса — обычно занимает две строки, здесь видно межстрочный интервал</h5>
-			<h6>B2B, B2C</h6>
-			<p>
-				Образец абзаца. Роли «абзац» в спецификации нет — размер и межстрочный
-				интервал нейтральные, до появления реальных текстов кейсов (K-1).
-			</p>
-			<small>Подпись — вспомогательный текст тем же стилем, что подзаголовок кейса.</small>
-			<a href="https://t.me/">Телеграм →</a>
+<Base title="Кирилл Колобанов — UX/UI дизайнер, 3 года опыта">
+	<div class="container">
+		<h1>Кирилл Колобанов</h1>
+		<h2>UX/UI дизайнер, 3 года опыта</h2>
+		<h3>Заголовок кейса</h3>
+		<h4>2026</h4>
+		<h5>Подзаголовок кейса — обычно занимает две строки, здесь видно межстрочный интервал</h5>
+		<h6>B2B, B2C</h6>
+		<p>
+			Образец абзаца. Роли «абзац» в спецификации нет — размер и межстрочный
+			интервал нейтральные, до появления реальных текстов кейсов (K-1).
+		</p>
+		<small>Подпись — вспомогательный текст тем же стилем, что подзаголовок кейса.</small>
 
-			<div class="case-grid">
-				<div class="case-media" aria-hidden="true"></div>
-				<div class="case-media" aria-hidden="true"></div>
-			</div>
-		</main>
-	</body>
-</html>
+		<div class="case-grid">
+			<div class="case-media" aria-hidden="true"></div>
+			<div class="case-media" aria-hidden="true"></div>
+		</div>
+	</div>
+</Base>

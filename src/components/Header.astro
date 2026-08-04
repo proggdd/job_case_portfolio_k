@@ -1,0 +1,65 @@
+---
+/*
+ * Шапка — DESIGN.md §3, блок 1: круглый аватар-миниатюра 61×61 слева,
+ * по центру группа пилюль на подложке.
+ *
+ * Центрирование группы пилюль: сетка 1fr auto 1fr — аватар в первой колонке,
+ * пилюли во второй; колонки 1 и 3 равны, поэтому средняя колонка оказывается
+ * по центру без привязки к ширине аватара. Инженерное решение, не значение
+ * из спецификации.
+ *
+ * Блюр подложки и переключение цвета над тёмным блоком кейса — отдельные
+ * анимации из DESIGN.md §4 (нужны высота героя и скролл-триггер, обе
+ * отложены до P5-T5). Числового радиуса блюра в токенах нет —
+ * без него подложка сейчас непрозрачная, цветом --color-surface
+ * («подложка группы пилюль» в DESIGN.md §2).
+ */
+import ContactPills from './ContactPills.astro';
+---
+
+<header class="site-header">
+	<div class="site-header__inner container">
+		<div class="avatar" aria-hidden="true"></div>
+		<div class="pill-group">
+			<ContactPills />
+		</div>
+	</div>
+</header>
+
+<style>
+	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		background-color: var(--color-bg);
+		/* Переиспользован токен «шапка → фото героя» (20px) и сверху, и снизу:
+		   он же задаёт отступ от шапки до героя, только теперь это внутренний
+		   отступ самой шапки, а не внешний margin следующего блока. */
+		padding-block: var(--space-header-to-hero);
+	}
+
+	.site-header__inner {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+	}
+
+	.avatar {
+		width: 61px; /* DESIGN.md §3: аватар-миниатюра 61×61 */
+		height: 61px;
+		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар — круг */
+		background-color: var(--color-surface); /* заглушка, DESIGN.md §6 */
+		justify-self: start;
+	}
+
+	.pill-group {
+		grid-column: 2;
+		height: 61px; /* DESIGN.md §2: подложка группы пилюль 61px высотой */
+		/* 12px — внутренний боковой отступ подложки не задан в DESIGN.md, инженерный дефолт */
+		padding-inline: calc(var(--space-unit) * 3);
+		display: flex;
+		align-items: center;
+		background-color: var(--color-surface);
+		border-radius: var(--radius-pill-group); /* DESIGN.md §2: 24px */
+	}
+</style>

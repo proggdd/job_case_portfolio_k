@@ -1,0 +1,32 @@
+---
+/*
+ * Подвал — DESIGN.md §3, блок 4: полоса высотой 64px, повтор контактов.
+ * Мастер-план (карточка P5-T1) упоминает ещё соцсети и год, но раздел 3
+ * DESIGN.md как более детальный и замороженный (G3/G4) источник ограничивает
+ * подвал только контактами — следую спецификации, а не общей формулировке
+ * карточки (правило 1 мастер-плана: спецификация первична).
+ */
+import ContactPills from './ContactPills.astro';
+---
+
+<footer class="site-footer">
+	<div class="site-footer__inner container">
+		<ContactPills />
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		height: 64px; /* DESIGN.md §3: полоса высотой 64px */
+		background-color: var(--color-surface); /* DESIGN.md §2: «нижняя полоса» */
+		border-top-left-radius: var(--radius-footer-top); /* DESIGN.md §2: 0px сверху */
+		border-top-right-radius: var(--radius-footer-top);
+	}
+
+	.site-footer__inner {
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+</style>
