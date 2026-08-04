@@ -2,6 +2,7 @@
 import '../styles/tokens.css';
 import '../styles/reset.css';
 import '../styles/typography.css';
+import '../styles/layout.css';
 ---
 
 <html lang="ru">
@@ -14,7 +15,7 @@ import '../styles/typography.css';
 		<title>Дизайн-система — тестовая страница (Ф4)</title>
 	</head>
 	<body>
-		<main>
+		<main class="container">
 			<h1>Кирилл Колобанов</h1>
 			<h2>UX/UI дизайнер, 3 года опыта</h2>
 			<h3>Заголовок кейса</h3>
@@ -27,6 +28,11 @@ import '../styles/typography.css';
 			</p>
 			<small>Подпись — вспомогательный текст тем же стилем, что подзаголовок кейса.</small>
 			<a href="https://t.me/">Телеграм →</a>
+
+			<div class="case-grid">
+				<div class="case-media" aria-hidden="true"></div>
+				<div class="case-media" aria-hidden="true"></div>
+			</div>
 		</main>
 	</body>
 </html>
