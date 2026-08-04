@@ -33,11 +33,17 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr); /* без minmax(0, ...) колонка не сжимается ниже контента и вылезает вбок на узких экранах */
   gap: var(--space-case-to-case);
+  /* DESIGN.md §2 «Шкала отступов»: сегменты → первый кейс (унифицировано
+     с шагом кейс → кейс) и последний кейс → нижняя полоса. */
+  margin-top: var(--space-segments-to-first-case);
+  margin-bottom: var(--space-last-case-to-footer);
 }
 
 .case-media {
+  display: block;
   width: 100%;
   aspect-ratio: 5 / 4; /* DESIGN.md §3: медиа-блок 1340×1060 ≈ 5:4 */
   border-radius: var(--radius-media);
-  background-color: var(--color-surface); /* заглушка, DESIGN.md §6 */
+  background-color: var(--color-surface); /* заглушка, DESIGN.md §6, и фон под загрузку/ошибку реального медиа */
+  object-fit: cover; /* P5-T2: видео/изображение заполняют рамку без искажений; на заглушке-<div> свойство не действует */
 }

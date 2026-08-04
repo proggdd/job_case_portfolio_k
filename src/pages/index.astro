@@ -1,11 +1,23 @@
 ---
 /*
- * Главная. Реальный герой и лента кейсов — задачи P5-T2/P5-T3, отдельными
- * чатами. Пока сохранены образцы типографики из Ф4: они уже дают ровно один
- * H1 и иерархию заголовков без пропусков, чего достаточно для проверки
- * шапки/подвала в этой карточке.
+ * Главная. Лента кейсов — задача P5-T2: данные из коллекции works,
+ * показываются только featured, порядок — по полю order (DESIGN.md §3
+ * «Модель данных кейса», карточка P5-T2 шаг 1). Герой отдельной карточкой
+ * ещё не назначен — образцы типографики Ф4 для его ролей (H1 имя,
+ * H2 специализация, H6 сегменты) оставлены как есть, вне границ этой задачи.
+ *
+ * Для журнала: H3/H4/H5 ниже — те же роли (заголовок кейса, год,
+ * подзаголовок), что теперь рендерит CaseRow по реальным данным. Визуальное
+ * повторение до появления карточки под герой — замеченное вне задачи,
+ * по правилу 7 мастер-плана не трогаю, фиксирую в JOURNAL.
  */
 import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import CaseRow from '../components/CaseRow.astro';
+
+const works = (await getCollection('works', ({ data }) => data.featured)).sort(
+	(a, b) => a.data.order - b.data.order
+);
 ---
 
 <Base title="Кирилл Колобанов — UX/UI дизайнер, 3 года опыта">
@@ -22,9 +34,8 @@ import Base from '../layouts/Base.astro';
 		</p>
 		<small>Подпись — вспомогательный текст тем же стилем, что подзаголовок кейса.</small>
 
-		<div class="case-grid">
-			<div class="case-media" aria-hidden="true"></div>
-			<div class="case-media" aria-hidden="true"></div>
-		</div>
+		<ul class="case-grid">
+			{works.map((work, index) => <CaseRow work={work} eager={index === 0} />)}
+		</ul>
 	</div>
 </Base>

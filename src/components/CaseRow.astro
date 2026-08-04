@@ -1,0 +1,114 @@
+---
+/*
+ * CaseRow — DESIGN.md §3 «Компоненты» + «Блоки главной» №3 + карточка P5-T2.
+ *
+ * Весь блок кейса — ОДНА ссылка на /works/<slug>: кликабельны и заголовок,
+ * и медиа (карточка P5-T2 «Важное по содержанию»). Здесь ровно один <a>,
+ * оборачивающий всё содержимое строки — не три вложенные ссылки.
+ *
+ * Год не оформлен как <h4>: сопоставление ролей с тегами H1–H6 в
+ * typography.css было временным для проверки шкалы на тестовой странице Ф4
+ * (см. комментарий там же) — реальную семантику задают компоненты Ф5.
+ * Год — метаданные при заголовке, а не отдельный подраздел, поэтому это
+ * <span> со стилем токена --text-year-*, а не заголовок. Заголовок кейса —
+ * <h3> (после будущих H1/H2 героя иерархия не прерывается). Подзаголовок —
+ * <p>, обычный текст под заголовком, не отдельный уровень заголовков.
+ *
+ * DESIGN.md §5 «Мобильный»: «год переносится под заголовок» — реализовано
+ * mobile-first в <style>: колонка по умолчанию, строка с 600px.
+ */
+import type { CollectionEntry } from 'astro:content';
+import CaseMedia from './CaseMedia.astro';
+
+interface Props {
+	work: CollectionEntry<'works'>;
+	/** Первая строка ленты — медиа не уходит в loading="lazy" (DESIGN.md §6). */
+	eager?: boolean;
+}
+
+const { work, eager = false } = Astro.props;
+const { title, year, summary, video, poster } = work.data;
+const href = `${import.meta.env.BASE_URL}works/${work.id}/`;
+---
+
+<li class="case-row">
+	<a class="case-row__link" href={href}>
+		<div class="case-row__header">
+			<h3 class="case-row__title">{title}</h3>
+			<span class="case-row__year">{year}</span>
+		</div>
+		<p class="case-row__subtitle">{summary}</p>
+		<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager={eager} />
+	</a>
+</li>
+
+<style>
+	.case-row__link {
+		display: block;
+		color: inherit;
+	}
+
+	/* Отменяет глобальное a:hover/:focus-visible { text-decoration: underline }
+	   из typography.css — DESIGN.md §4 «Строка кейса» задаёт для hover
+	   подсветку заголовка, а не подчёркивание всего блока. */
+	.case-row__link:hover,
+	.case-row__link:focus-visible {
+		text-decoration: none;
+	}
+
+	.case-row__link:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус на строках кейсов */
+		outline-offset: 4px;
+		border-radius: var(--radius-media);
+	}
+
+	.case-row__header {
+		display: flex;
+		flex-direction: column; /* мобильный, DESIGN.md §5: год переносится под заголовок */
+		align-items: flex-start;
+	}
+
+	.case-row__title {
+		font-family: var(--font-display);
+		font-size: var(--text-case-title-size);
+		line-height: var(--text-case-title-line-height);
+		font-weight: var(--text-case-title-weight);
+		transition: color 250ms ease-out; /* DESIGN.md §4 «Строка кейса»: hover 250мс ease-out */
+	}
+
+	.case-row__link:hover .case-row__title,
+	.case-row__link:focus-visible .case-row__title {
+		color: var(--color-text-muted); /* DESIGN.md §4: подсветка заголовка */
+	}
+
+	.case-row__year {
+		font-family: var(--font-display);
+		font-size: var(--text-year-size);
+		line-height: var(--text-year-line-height);
+		font-weight: var(--text-year-weight);
+		flex-shrink: 0;
+	}
+
+	.case-row__subtitle {
+		max-width: none; /* переопределение typography.css: 66ch — норма для связного текста, здесь короткая подпись в 1–2 строки */
+		margin-top: var(--space-case-title-to-subtitle);
+		font-family: var(--font-body);
+		font-size: var(--text-case-subtitle-size);
+		line-height: var(--text-case-subtitle-line-height);
+		font-weight: var(--text-case-subtitle-weight);
+		color: var(--color-text-subtle);
+	}
+
+	.case-row :global(.case-media) {
+		margin-top: var(--space-subtitle-to-media);
+	}
+
+	@media (min-width: 600px) {
+		.case-row__header {
+			flex-direction: row;
+			align-items: baseline;
+			justify-content: space-between;
+			gap: calc(var(--space-unit) * 4); /* не задано в DESIGN.md — инженерный дефолт на базовой единице */
+		}
+	}
+</style>

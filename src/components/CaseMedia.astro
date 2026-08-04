@@ -1,0 +1,52 @@
+---
+/*
+ * CaseMedia — DESIGN.md §3 «Компоненты» + §6 «Заглушки».
+ * Состояние определяется данными, а не отдельным компонентом-костылём:
+ * пустые video и poster дают заглушку (§6: сплошная подложка --color-surface,
+ * без текста и без «placeholder»-надписей). Во всех трёх ветках рендерится
+ * элемент с одним и тем же классом .case-media — подстановка video/poster
+ * в данные кейса не трогает разметку вокруг, только содержимое этого узла
+ * (критерий P5-T2 «готово, когда»: замена заглушки не меняет ни один селектор).
+ *
+ * Пропорции — 1340×1060 (≈5:4, DESIGN.md §3) заданы через aspect-ratio
+ * в общем классе .case-media (src/styles/layout.css, из Ф4) — контент
+ * не «прыгает» при подстановке файла (CLS).
+ *
+ * Состояние «ошибка загрузки» (DESIGN.md §3, таблица компонентов) отдельной
+ * веткой не реализовано: у <video poster> постер остаётся видимым и до
+ * готовности, и при ошибке воспроизведения — это нативное поведение
+ * HTMLMediaElement, дополнительный JS не нужен (DESIGN.md §1: без JS-библиотек).
+ *
+ * astro:assets для постера пока не подключён: поле poster в схеме —
+ * z.string() (P3-T3), а не image() из astro:content, оптимизация
+ * astro:assets для строкового пути потребовала бы менять схему коллекции —
+ * это вне границ карточки P5-T2. Решение по схеме — при появлении реальных
+ * постеров, задача P6-T1 (конвейер изображений).
+ */
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	video?: CollectionEntry<'works'>['data']['video'];
+	poster?: CollectionEntry<'works'>['data']['poster'];
+	/** Осмысленное описание для alt / aria-label, из данных кейса. */
+	alt: string;
+	/** Первая карточка ленты — не уходит в loading="lazy" (DESIGN.md §6). */
+	eager?: boolean;
+}
+
+const { video, poster, alt, eager = false } = Astro.props;
+const loading = eager ? undefined : 'lazy';
+---
+
+{
+	video ? (
+		<video class="case-media" muted playsinline loop preload="none" poster={poster} aria-label={alt}>
+			<source src={video} type="video/mp4" />
+			{poster && <img class="case-media" src={poster} alt={alt} loading={loading} decoding="async" />}
+		</video>
+	) : poster ? (
+		<img class="case-media" src={poster} alt={alt} loading={loading} decoding="async" />
+	) : (
+		<div class="case-media" aria-hidden="true"></div>
+	)
+}
