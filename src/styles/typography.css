@@ -1,0 +1,101 @@
+/*
+ * Типографика сайта-портфолио.
+ * Размеры, межстрочные интервалы и начертания — из tokens.css (значения
+ * DESIGN.md §2). Сопоставление ролей с тегами H1–H6 условно и служит только
+ * для проверки шкалы на тестовой странице Ф4 — итоговую семантику разметки
+ * определяют компоненты в Ф5.
+ *
+ * Сопоставление: H1 — имя, H2 — специализация, H3 — заголовок кейса,
+ * H4 — год, H5 — подзаголовок кейса (используется и как «подпись»),
+ * H6 — сегменты, ссылка — текст пилюли (пилюли — единственные ссылки в макете).
+ *
+ * Роли «абзац» в DESIGN.md §2 нет — сайт не содержит связного текста вне
+ * описания кейса (K-1, придёт в P5-T3/P6-T2). До тех пор для <p> — нейтральный
+ * браузерный размер 16px и межстрочный 1.5, это инженерный дефолт, а не
+ * дизайн-значение.
+ */
+
+html {
+  font-size: 100%; /* 1rem = 16px, браузерный дефолт */
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+}
+
+h1 {
+  font-size: var(--text-name-size);
+  line-height: var(--text-name-line-height);
+  font-weight: var(--text-name-weight);
+}
+
+h2 {
+  font-size: var(--text-specialization-size);
+  line-height: var(--text-specialization-line-height);
+  font-weight: var(--text-specialization-weight);
+}
+
+h3 {
+  font-size: var(--text-case-title-size);
+  line-height: var(--text-case-title-line-height);
+  font-weight: var(--text-case-title-weight);
+}
+
+h4 {
+  font-size: var(--text-year-size);
+  line-height: var(--text-year-line-height);
+  font-weight: var(--text-year-weight);
+}
+
+h5 {
+  font-size: var(--text-case-subtitle-size);
+  line-height: var(--text-case-subtitle-line-height);
+  font-weight: var(--text-case-subtitle-weight);
+  color: var(--color-text-subtle);
+}
+
+h6 {
+  font-size: var(--text-segments-size);
+  line-height: var(--text-segments-line-height);
+  font-weight: var(--text-segments-weight);
+  color: var(--color-text-muted);
+}
+
+p {
+  max-width: 66ch; /* норма читаемости 45–75 знаков в строке, инженерный дефолт */
+}
+
+small {
+  display: block;
+  max-width: 66ch;
+  font-family: var(--font-body);
+  font-size: var(--text-case-subtitle-size);
+  line-height: var(--text-case-subtitle-line-height);
+  font-weight: var(--text-case-subtitle-weight);
+  color: var(--color-text-subtle);
+}
+
+a {
+  font-family: var(--font-body);
+  font-size: var(--text-pill-size);
+  line-height: var(--text-pill-line-height);
+  font-weight: var(--text-pill-weight);
+  color: var(--color-text);
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+}
