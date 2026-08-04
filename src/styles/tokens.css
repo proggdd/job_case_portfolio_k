@@ -1,0 +1,74 @@
+/*
+ * Дизайн-токены сайта-портфолио.
+ * Источник значений — DESIGN.md, раздел 2 «Дизайн-токены».
+ * Единственный файл проекта, где допустимы HEX-цвета и font-family.
+ *
+ * Статус типографики: размеры и межстрочные интервалы помечены в DESIGN.md
+ * как ≈ (выведены из высоты глифов, ждут подтверждения дизайнера, K-3).
+ * Размер --text-segments-size уточнён у Даниила 05.08.2026: в спецификации
+ * диапазон 44–48px, взято 48px (верхняя граница, ближе к расчёту по методу
+ * из DESIGN.md: 36.5 / 0.74 ≈ 49.3px).
+ */
+
+:root {
+  /* Цвет — DESIGN.md §2, «Цвет» ✅ измерено */
+  --color-bg: #FFFFFF;
+  --color-surface: #F3F3F3;
+  --color-pill-bg: #FFFFFF;
+  --color-text: #0F0F0F;
+  --color-text-muted: #868686;
+  --color-text-subtle: #ABABAB;
+
+  /* Шрифты — DESIGN.md §2, временное решение до K-3 */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-body);
+
+  /* Типографика — DESIGN.md §2, «Типографика» ≈ требует подтверждения (K-3) */
+  --text-name-size: 80px;
+  --text-name-line-height: 80px;
+  --text-name-weight: 700; /* полужирное */
+
+  --text-specialization-size: 60px;
+  --text-specialization-line-height: 60px;
+  --text-specialization-weight: 400; /* обычное */
+
+  --text-segments-size: 48px; /* уточнено у Даниила 05.08.2026, диапазон 44–48 в DESIGN.md */
+  --text-segments-line-height: 40px;
+  --text-segments-weight: 400; /* обычное */
+
+  --text-case-title-size: 24px;
+  --text-case-title-line-height: 24px;
+  --text-case-title-weight: 700; /* полужирное */
+
+  --text-year-size: 24px;
+  --text-year-line-height: 24px;
+  --text-year-weight: 700; /* полужирное */
+
+  --text-case-subtitle-size: 24px;
+  --text-case-subtitle-line-height: 35px;
+  --text-case-subtitle-weight: 400; /* обычное */
+
+  --text-pill-size: 20px;
+  --text-pill-line-height: 21px;
+  --text-pill-weight: 500; /* среднее */
+
+  /* Шкала отступов — DESIGN.md §2, «Шкала отступов» ✅ измерено, база 4px */
+  --space-unit: 4px;
+  --content-max-width: 1340px;
+  --space-content-padding: 50px;
+  --space-header-to-hero: 20px;
+  --space-photo-to-name: 0px;
+  --space-name-to-specialization: 32px;
+  --space-specialization-to-segments: 32px;
+  --space-segments-to-first-case: 80px; /* унифицировано с шагом «кейс → кейс», см. DESIGN.md §2 */
+  --space-case-title-to-subtitle: 12px;
+  --space-subtitle-to-media: 32px;
+  --space-case-to-case: 80px;
+  --space-last-case-to-footer: 199px;
+
+  /* Скругления — DESIGN.md §2, «Скругления» ✅ измерено */
+  --radius-pill-group: 24px;
+  --radius-pill: 12px;
+  --radius-media: 16px;
+  --radius-footer-top: 0px;
+}
