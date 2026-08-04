@@ -1,0 +1,17 @@
+# Единая политика окончаний строк: в репозитории всегда LF,
+# в рабочей копии — как принято в системе. Гасит предупреждения
+# «LF will be replaced by CRLF» и защищает от диффов, где файл
+# помечен изменённым целиком из-за переносов строк.
+* text=auto eol=lf
+
+# Бинарные файлы не трогать.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.mp4 binary
+*.webm binary
+*.woff binary
+*.woff2 binary
+*.ico binary
