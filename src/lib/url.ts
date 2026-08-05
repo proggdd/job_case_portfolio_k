@@ -23,6 +23,9 @@ export function withBase(path: string): string;
 export function withBase(path: undefined): undefined;
 export function withBase(path?: string): string | undefined;
 export function withBase(path?: string): string | undefined {
-	if (!path) return undefined;
+	if (path === undefined || path === null) return undefined;
+	// Пустая строка — валидный вход: это ссылка на корень сайта.
+	// Проверка на falsy здесь была дефектом: href у кнопок «На главную»
+	// не рендерился вовсе, и ссылки не работали (найдено 05.08.2026).
 	return `${base}${path.replace(/^\//, '')}`;
 }
