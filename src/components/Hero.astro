@@ -1,38 +1,53 @@
 ---
 /*
- * Hero — герой главной, DESIGN.md §3 блок 2, карточка P5-T7.
+ * Hero — герой главной, DESIGN.md §3 блок 2, карточки P5-T7 и P5-T6.
  *
  * Имя — единственный <h1> страницы (DESIGN.md §8: один H1 на страницу).
  * Специализация — <h2>, следующий уровень иерархии без пропусков.
  * Сегменты — не заголовок: DESIGN.md §3 описывает их как метаданные при
- * специализации, а не отдельный подраздел контента, поэтому — <p> со
- * стилем токена --text-segments-*, а не <h6> (как временно было в тестовой
- * странице Ф4). Та же логика, что увела год CaseRow от <h4> в P5-T2:
- * сопоставление ролей с тегами H1–H6 в typography.css было временным
- * для проверки шкалы, не финальной семантикой (см. комментарий там же).
+ * специализации, поэтому <p> со стилем токена --text-segments-*.
  *
- * Медиа — заглушка по DESIGN.md §6: круг, подложка --color-surface,
- * без текста и без «placeholder»-надписей. Видео-аватар подключается
- * в P5-T6 тем же приёмом, что и CaseMedia: состояние определяется
- * наличием данных, класс .hero__media не меняется при подстановке видео.
+ * ── Видео-аватар (P5-T6) ──────────────────────────────────────────────
+ * Исходник от дизайнера — полный оборот головы на 360° за 15 секунд, а не
+ * сектор ±45°, как в инструкции. На краях экрана курсор показывал бы
+ * затылок, поэтому из исходника вырезана только нужная дуга: последние
+ * 1.875 с (поворот влево) склеены с первыми 1.875 с (поворот вправо).
+ * В итоге head.mp4 длится 3.75 с и читается линейно: t=0 — влево на 45°,
+ * t=1.875 — анфас, t=3.75 — вправо на 45°. Никакой обработки перехода
+ * через границу лупа в коде не нужно.
  *
- * Ширина медиа — min(620px, 100%): 620×620 из DESIGN.md §3 на десктопе,
- * на узких экранах сжимается пропорционально ширине контейнера.
- * В спецификации (§5) для мобильного есть только качественное «аватар
- * в герое уменьшается», без px — отдельного числа не изобретено, размер
- * выведен ограничением уже заданной десктопной величины, тем же приёмом,
- * что число колонок .case-grid в P4-T3 (значение не в спецификации явно,
- * но выводится из уже измеренного).
+ * Файл перекодирован all-intra (каждый кадр ключевой): без этого перемотка
+ * рвётся — в исходнике на 15 секунд приходилось два ключевых кадра.
  *
- * Отступы, уже покрытые соседними элементами — не дублируются здесь:
- * шапка → герой задаёт padding-block шапки (Header.astro, переиспользует
- * --space-header-to-hero сверху и снизу); сегменты → первый кейс задаёт
- * .case-grid margin-top (--space-segments-to-first-case, P4-T3, layout.css).
+ * Белый фон убирается mix-blend-mode: multiply. ⚠️ Ни один предок видео не
+ * должен иметь transform, opacity или z-index — это изолирует контекст
+ * наложения, и вокруг головы появляется белый прямоугольник (DESIGN.md §6).
+ * Поэтому позиционирование только через margin.
+ *
+ * Поведение по устройствам:
+ *   — мышь: currentTime следует за курсором по горизонтали;
+ *   — тач и клавиатура: видео не грузится вовсе, виден постер;
+ *   — prefers-reduced-motion: то же, постер без движения (DESIGN.md §4).
  */
+import { withBase } from '../lib/url';
+
+const poster = withBase('media/avatar/head-poster.webp');
+const video = withBase('media/avatar/head.mp4');
 ---
 
 <section class="hero">
-	<div class="hero__media" aria-hidden="true"></div>
+	<div class="hero__media" data-hero-media>
+		<img class="hero__poster" src={poster} alt="Кирилл Колобанов" width="1240" height="1240" />
+		<video
+			class="hero__video"
+			data-hero-video
+			src={video}
+			muted
+			playsinline
+			preload="none"
+			aria-hidden="true"
+			tabindex="-1"></video>
+	</div>
 	<h1 class="hero__name">Кирилл Колобанов</h1>
 	<h2 class="hero__specialization">UX/UI дизайнер, 3 года опыта</h2>
 	<p class="hero__segments">B2B, B2C</p>
@@ -42,20 +57,44 @@
 	/*
 	 * Выравнивание по центру — из макета: фото 620×620 стоит в 408–1028 при
 	 * ширине 1440, имя 341–1100, специализация 281–1160, сегменты 631–810.
-	 * У всех четырёх блоков центр приходится на 720 — то есть весь герой
-	 * центрирован. В спецификации это не было записано словами (пробел §3),
-	 * добавлено 05.08.2026 после замечания по вёрстке.
+	 * У всех четырёх блоков центр приходится на 720 — весь герой центрирован.
 	 */
 	.hero {
 		text-align: center;
 	}
 
+	/*
+	 * На .hero__media намеренно нет transform, opacity и z-index — они
+	 * изолировали бы контекст наложения для mix-blend-mode дочернего видео.
+	 */
 	.hero__media {
 		margin-inline: auto;
+		position: relative;
 		width: min(620px, 100%);
 		aspect-ratio: 1 / 1;
-		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар и фото героя — круг */
-		background-color: var(--color-surface); /* заглушка, DESIGN.md §6 */
+	}
+
+	.hero__poster,
+	.hero__video {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		mix-blend-mode: multiply; /* убирает белый фон исходника */
+	}
+
+	.hero__video {
+		position: absolute;
+		inset: 0;
+		visibility: hidden; /* показывается скриптом, только если видео действительно загрузилось */
+	}
+
+	.hero__media[data-active='true'] .hero__video {
+		visibility: visible;
+	}
+
+	.hero__media[data-active='true'] .hero__poster {
+		visibility: hidden;
 	}
 
 	.hero__name {
@@ -68,7 +107,7 @@
 
 	.hero__segments {
 		margin-top: var(--space-specialization-to-segments);
-		max-width: none; /* переопределение 66ch из typography.css: короткая строка метаданных, не связный текст */
+		max-width: none; /* переопределение 66ch из typography.css: короткая строка метаданных */
 		font-family: var(--font-body);
 		font-size: var(--text-segments-size);
 		line-height: var(--text-segments-line-height);
@@ -76,3 +115,66 @@
 		color: var(--color-text-muted); /* DESIGN.md §2: строка сегментов «B2B, B2C» */
 	}
 </style>
+
+<script>
+	/*
+	 * Отслеживание курсора. Позиция мыши по горизонтали отображается в
+	 * currentTime линейно — это работает только потому, что исходник снят
+	 * с постоянной угловой скоростью (см. references/03_motion).
+	 *
+	 * Направление: DIRECTION = 1 — курсор вправо поворачивает голову к концу
+	 * клипа. Если на живом сайте голова смотрит в противоположную сторону,
+	 * поменяйте на -1: это единственная строка, которую нужно трогать.
+	 */
+	const DIRECTION = 1;
+	const SMOOTHING = 0.12; // доля пути к цели за кадр: меньше — плавнее и «ленивее»
+
+	const media = document.querySelector<HTMLElement>('[data-hero-media]');
+	const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+
+	const finePointer = window.matchMedia('(pointer: fine)').matches;
+	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (media && video && finePointer && !reducedMotion) {
+		let target = 0.5; // 0 — влево, 0.5 — анфас, 1 — вправо
+		let current = 0.5;
+		let raf = 0;
+
+		const onMove = (event: PointerEvent) => {
+			const ratio = event.clientX / window.innerWidth;
+			target = DIRECTION === 1 ? ratio : 1 - ratio;
+		};
+
+		const tick = () => {
+			current += (target - current) * SMOOTHING;
+			if (video.duration) {
+				// края клипа не трогаем: на самом последнем кадре часть браузеров подвисает
+				video.currentTime = Math.min(Math.max(current, 0.001), 0.999) * video.duration;
+			}
+			raf = requestAnimationFrame(tick);
+		};
+
+		video.addEventListener(
+			'loadeddata',
+			() => {
+				media.dataset.active = 'true';
+				video.currentTime = video.duration / 2; // анфас как стартовое положение
+				window.addEventListener('pointermove', onMove, { passive: true });
+				raf = requestAnimationFrame(tick);
+			},
+			{ once: true }
+		);
+
+		video.addEventListener('error', () => cancelAnimationFrame(raf), { once: true });
+
+		// грузим только когда герой попал в поле зрения — первый экран не ждёт 1.6 МБ
+		const observer = new IntersectionObserver((entries) => {
+			if (entries.some((entry) => entry.isIntersecting)) {
+				video.preload = 'auto';
+				video.load();
+				observer.disconnect();
+			}
+		});
+		observer.observe(media);
+	}
+</script>
