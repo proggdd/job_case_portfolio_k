@@ -1,32 +1,95 @@
 ---
 /*
- * Подвал — DESIGN.md §3, блок 4: полоса высотой 64px, повтор контактов.
- * Мастер-план (карточка P5-T1) упоминает ещё соцсети и год, но раздел 3
- * DESIGN.md как более детальный и замороженный (G3/G4) источник ограничивает
- * подвал только контактами — следую спецификации, а не общей формулировке
- * карточки (правило 1 мастер-плана: спецификация первична).
+ * Подвал — DESIGN.md §3, блок 4: изначально полоса высотой 64px, повтор
+ * контактов. Мастер-план (карточка P5-T1) упоминает ещё соцсети и год, но
+ * раздел 3 DESIGN.md как более детальный и замороженный (G3/G4) источник
+ * ограничивает подвал только контактами — следую спецификации, а не общей
+ * формулировке карточки (правило 1 мастер-плана: спецификация первична).
+ *
+ * P11-T3 (05.08.2026) — DESIGN.md §3 «Поведение шапки и подвала»: «Подвал
+ * несёт не только контакты, но и навигацию: „На главную“ на всех страницах,
+ * „Следующий проект“ — на странице кейса. Это компенсирует исчезнувшую
+ * шапку (P11-T2): дойдя до низа, пользователь не должен скроллить обратно,
+ * чтобы куда-то перейти». Порядок по карточке: навигация, затем контакты.
+ *
+ * «Следующий проект» переиспользует CaseNav (карточка прямо требует не
+ * писать логику соседства заново) — передан только next, без prev: в
+ * подвале нужна одна ссылка вперёд, а не пара «пред/след», которая уже
+ * есть в теле страницы кейса. CaseNav сам ничего не рендерит, если next
+ * не передан (последний кейс) — специальной обработки края не нужно.
+ *
+ * Высота 64px из DESIGN.md была рассчитана на подвал-без-навигации;
+ * с добавленным блоком ссылок строка перестаёт помещаться в 64px почти
+ * везде, кроме самой главной (где нав нет вовсе). Заменено на min-height
+ * с тем же числом — на главной подвал выглядит как раньше, на остальных
+ * страницах растягивается по контенту.
  */
+import type { CollectionEntry } from 'astro:content';
 import ContactPills from './ContactPills.astro';
+import CaseNav from './CaseNav.astro';
+import { withBase } from '../lib/url';
+
+interface Props {
+	showHomeLink?: boolean;
+	nextWork?: CollectionEntry<'works'>;
+}
+
+const { showHomeLink = true, nextWork } = Astro.props;
+const hasNav = showHomeLink || Boolean(nextWork);
 ---
 
-<footer class="site-footer">
+<footer class="site-footer" data-footer>
 	<div class="site-footer__inner container">
+		{hasNav && (
+			<div class="site-footer__nav">
+				{showHomeLink && (
+					<a class="site-footer__home" href={withBase('')}>← На главную</a>
+				)}
+				{nextWork && <CaseNav next={nextWork} />}
+			</div>
+		)}
 		<ContactPills />
 	</div>
 </footer>
 
 <style>
 	.site-footer {
-		height: 64px; /* DESIGN.md §3: полоса высотой 64px */
+		min-height: 64px; /* DESIGN.md §3: полоса высотой 64px — без навигации подвал ей и остаётся */
 		background-color: var(--color-surface); /* DESIGN.md §2: «нижняя полоса» */
 		border-top-left-radius: var(--radius-footer-top); /* DESIGN.md §2: 0px сверху */
 		border-top-right-radius: var(--radius-footer-top);
+		padding-block: var(--space-header-to-hero); /* переиспользован тот же токен вертикального дыхания, что у шапки (Header.astro) — своего для подвала нет */
 	}
 
 	.site-footer__inner {
-		height: 100%;
+		min-height: 64px;
 		display: flex;
-		align-items: center;
+		flex-direction: column;
 		justify-content: center;
+		gap: calc(var(--space-unit) * 4); /* не задано в DESIGN.md, инженерный дефолт на базовой единице, тот же, что gap внутри CaseNav */
+	}
+
+	.site-footer__nav {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--space-unit) * 4);
+	}
+
+	.site-footer__home {
+		align-self: flex-start;
+		color: var(--color-text-muted); /* тот же приём, что case-page__back и not-found__link */
+	}
+
+	.site-footer__home:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
+		outline-offset: 4px;
+	}
+
+	@media (min-width: 600px) {
+		.site-footer__nav {
+			flex-direction: row;
+			align-items: baseline;
+			justify-content: space-between;
+		}
 	}
 </style>

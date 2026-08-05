@@ -6,20 +6,47 @@
  * Фавиконки собраны через import.meta.env.BASE_URL — до этого файла пути
  * были абсолютными без учёта base ('/job_case_portfolio_k') и давали 404
  * на проде (замечено в JOURNAL после P3-T2).
+ *
+ * P11-T2: [data-viewport-sentinel] — невидимый маркер высотой в один экран
+ * в самом начале body. Header.astro наблюдает за ним через IntersectionObserver,
+ * чтобы понять, что пользователь пролистал дальше первого экрана (DESIGN.md
+ * §4: «скролл > высоты героя»), — единый триггер работает и на главной
+ * (где это буквально высота героя), и на странице кейса/404, где героя нет
+ * вовсе, но шапка обязана вести себя так же. position: absolute без
+ * позиционированного предка ставит его в начало документа и не смещает
+ * остальную вёрстку (containing block — не body, а вся страница).
+ *
+ * P11-T3: подвал теперь несёт навигацию (DESIGN.md §3), которая зависит
+ * от страницы — Base.astro прокидывает в Footer два новых пропса:
+ * showHomeLink (везде true, кроме главной — незачем вести с главной на
+ * главную) и nextWork (только со страницы кейса, для «Следующий проект»).
+ *
+ * P11-T5: глобальный наблюдатель анимаций появления (DESIGN.md §4). Один
+ * IntersectionObserver на всё дерево [data-reveal] — компонент сам решает,
+ * какие свои элементы помечать этим атрибутом (Hero, CaseRow, блоки
+ * страницы кейса), Base.astro только один раз включает механику после
+ * полной загрузки разметки. Шапка и подвал в выборку не входят (MASTER_PLAN
+ * P11-T5 «Не делать») — они не помечены [data-reveal] нигде в коде.
  */
 import '../styles/tokens.css';
 import '../styles/reset.css';
 import '../styles/typography.css';
 import '../styles/layout.css';
+import '../styles/reveal.css';
+import type { CollectionEntry } from 'astro:content';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { withBase } from '../lib/url';
 
 interface Props {
 	title: string;
+	/** Ссылка «На главную» в подвале. По умолчанию true — снята только на самой главной. */
+	showHomeLink?: boolean;
+	/** Следующий кейс — только со страницы кейса, для ссылки «Следующий проект» в подвале. */
+	nextWork?: CollectionEntry<'works'>;
 }
 
-const { title } = Astro.props;
+const { title, showHomeLink = true, nextWork } = Astro.props;
 // пути — через общий withBase (src/lib/url.ts)
 ---
 
@@ -32,12 +59,54 @@ const { title } = Astro.props;
 		<link rel="icon" href={withBase('favicon.ico')} />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+		<style>
+			.viewport-sentinel {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 1px;
+				height: 100vh; /* один экран — приближение «высоты героя» без зависимости от того, есть ли герой на странице */
+				pointer-events: none;
+			}
+		</style>
 	</head>
 	<body>
+		<div class="viewport-sentinel" data-viewport-sentinel aria-hidden="true"></div>
 		<Header />
 		<main>
 			<slot />
 		</main>
-		<Footer />
+		<Footer showHomeLink={showHomeLink} nextWork={nextWork} />
+		<script>
+			/*
+			 * P11-T5: появление блоков при скролле. Один общий наблюдатель на все
+			 * [data-reveal]-элементы страницы — порог 15% (DESIGN.md §4), после
+			 * первого срабатывания элемент снимается с наблюдения, чтобы обратная
+			 * прокрутка не прятала и не перезапускала анимацию (карточка, «готово
+			 * когда»: повторный проход вверх-вниз не перезапускает анимацию).
+			 * prefers-reduced-motion — класс проставляется сразу всем, без
+			 * наблюдения: reveal.css при этом состоянии и так убирает transition,
+			 * но без класса элементы остались бы с opacity: 0 навсегда.
+			 */
+			const items = document.querySelectorAll<HTMLElement>('[data-reveal]');
+			const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			if (reducedMotion) {
+				items.forEach((item) => item.classList.add('is-revealed'));
+			} else if (items.length > 0) {
+				const observer = new IntersectionObserver(
+					(entries) => {
+						for (const entry of entries) {
+							if (entry.isIntersecting) {
+								entry.target.classList.add('is-revealed');
+								observer.unobserve(entry.target);
+							}
+						}
+					},
+					{ threshold: 0.15 }
+				);
+				items.forEach((item) => observer.observe(item));
+			}
+		</script>
 	</body>
 </html>

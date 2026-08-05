@@ -27,6 +27,12 @@
  * Astro при сборке кладёт 404.html в корень dist/ независимо от `base` —
  * так и должно быть: GitHub Pages ищет 404.html в корне опубликованного
  * сайта.
+ *
+ * P11-T5: data-reveal на весь .not-found — DESIGN.md §4 говорит «любой
+ * крупный блок», страница состоит из одного блока целиком, дробить на
+ * лесенку не за чем — код/заголовок/текст видны все разом на любом экране,
+ * без явного перечисления 404 в списке примеров карточки, но и без
+ * противоречия общему правилу.
  */
 import Base from '../layouts/Base.astro';
 import { withBase } from '../lib/url';
@@ -35,7 +41,7 @@ const base = withBase('');
 ---
 
 <Base title="Страница не найдена — Кирилл Колобанов">
-	<div class="container not-found">
+	<div class="container not-found" data-reveal>
 		<p class="not-found__code" aria-hidden="true">404</p>
 		<h1 class="not-found__title">Страница не найдена</h1>
 		<p class="not-found__text">Такой страницы не существует — возможно, ссылка устарела.</p>

@@ -7,7 +7,14 @@
  * как ≈ (выведены из высоты глифов, ждут подтверждения дизайнера, K-3).
  * Размер --text-segments-size уточнён у Даниила 05.08.2026: в спецификации
  * диапазон 44–48px, взято 48px (верхняя граница, ближе к расчёту по методу
- * из DESIGN.md: 36.5 / 0.74 ≈ 49.3px).
+ * из DESIGN.md: 36.5 / 0.74 ≈ 49.3px). Значение 48px теперь максимум clamp.
+ *
+ * P11-T1 (05.08.2026): размеры макета 1440 переведены на
+ * clamp(мин, коэффициент vw, макс) по таблице DESIGN.md §2 «Масштабирование».
+ * Мин/коэффициент/макс — значения из этой таблицы, не изобретены здесь.
+ * Межстрочные — безразмерным множителем (значение из макета ÷ размер
+ * из макета), а не пикселями: фиксированный line-height рвёт вёрстку
+ * при сжатии размера на узких экранах.
  */
 
 :root {
@@ -23,48 +30,56 @@
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-body);
 
-  /* Типографика — DESIGN.md §2, «Типографика» ≈ требует подтверждения (K-3) */
-  --text-name-size: 80px;
-  --text-name-line-height: 80px;
+  /* Типографика — DESIGN.md §2, «Масштабирование» ✅ добавлено 05.08.2026 */
+  --text-name-size: clamp(34px, 5.56vw, 80px);
+  --text-name-line-height: 1; /* 80/80, DESIGN.md §2 */
   --text-name-weight: 700; /* полужирное */
 
-  --text-specialization-size: 60px;
-  --text-specialization-line-height: 60px;
+  --text-specialization-size: clamp(22px, 4.17vw, 60px);
+  --text-specialization-line-height: 1; /* 60/60 */
   --text-specialization-weight: 400; /* обычное */
 
-  --text-segments-size: 48px; /* уточнено у Даниила 05.08.2026, диапазон 44–48 в DESIGN.md */
-  --text-segments-line-height: 40px;
+  --text-segments-size: clamp(18px, 3.33vw, 48px);
+  --text-segments-line-height: 0.83; /* 40/48 */
   --text-segments-weight: 400; /* обычное */
 
-  --text-case-title-size: 24px;
-  --text-case-title-line-height: 24px;
+  --text-case-title-size: clamp(18px, 1.67vw, 24px);
+  --text-case-title-line-height: 1; /* 24/24 */
   --text-case-title-weight: 700; /* полужирное */
 
-  --text-year-size: 24px;
-  --text-year-line-height: 24px;
+  --text-year-size: clamp(16px, 1.67vw, 24px);
+  --text-year-line-height: 1; /* 24/24 */
   --text-year-weight: 700; /* полужирное */
 
-  --text-case-subtitle-size: 24px;
-  --text-case-subtitle-line-height: 35px;
+  --text-case-subtitle-size: clamp(16px, 1.67vw, 24px);
+  --text-case-subtitle-line-height: 1.46; /* 35/24, DESIGN.md §2 пример расчёта */
   --text-case-subtitle-weight: 400; /* обычное */
 
-  --text-pill-size: 20px;
-  --text-pill-line-height: 21px;
+  --text-pill-size: clamp(14px, 1.39vw, 20px);
+  --text-pill-line-height: 1.05; /* 21/20 */
   --text-pill-weight: 500; /* среднее */
 
-  /* Шкала отступов — DESIGN.md §2, «Шкала отступов» ✅ измерено, база 4px */
+  /* Шкала отступов — DESIGN.md §2, «Шкала отступов» ✅ измерено, база 4px.
+     Крупные отступы между блоками переведены на min(макет-px, коэффициент vw)
+     по указанию DESIGN.md §2 «То же правило для отступов… (clamp или vw)»:
+     макетное значение остаётся максимумом (пересчитано на 1440 — так же,
+     как коэффициент типографики), явный минимум не задан в спецификации —
+     min() и без него не уходит в ноль или отрицательное значение, только
+     сжимается пропорционально экрану. --space-photo-to-name (0px) и
+     --space-case-title-to-subtitle (12px) не масштабируются: слишком малы,
+     чтобы создавать проблему на узких экранах. */
   --space-unit: 4px;
   --content-max-width: 1340px;
   --space-content-padding: 50px;
-  --space-header-to-hero: 20px;
+  --space-header-to-hero: min(20px, 1.39vw);
   --space-photo-to-name: 0px;
-  --space-name-to-specialization: 32px;
-  --space-specialization-to-segments: 32px;
-  --space-segments-to-first-case: 80px; /* унифицировано с шагом «кейс → кейс», см. DESIGN.md §2 */
+  --space-name-to-specialization: min(32px, 2.22vw);
+  --space-specialization-to-segments: min(32px, 2.22vw);
+  --space-segments-to-first-case: min(80px, 5.56vw); /* унифицировано с шагом «кейс → кейс», см. DESIGN.md §2 */
   --space-case-title-to-subtitle: 12px;
-  --space-subtitle-to-media: 32px;
-  --space-case-to-case: 80px;
-  --space-last-case-to-footer: 199px;
+  --space-subtitle-to-media: min(32px, 2.22vw);
+  --space-case-to-case: min(80px, 5.56vw);
+  --space-last-case-to-footer: min(199px, 13.82vw);
 
   /* Скругления — DESIGN.md §2, «Скругления» ✅ измерено */
   --radius-pill-group: 24px;

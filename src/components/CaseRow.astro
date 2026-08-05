@@ -16,6 +16,13 @@
  *
  * DESIGN.md §5 «Мобильный»: «год переносится под заголовок» — реализовано
  * mobile-first в <style>: колонка по умолчанию, строка с 600px.
+ *
+ * P11-T5: data-reveal на <li> целиком — «каждый кейс» в перечне DESIGN.md
+ * §4 считается одним блоком, а не набором из заголовка/подзаголовка/медиа
+ * с внутренней лесенкой: строки и так растянуты по странице и попадают
+ * в зону видимости по очереди по мере скролла, искусственная задержка
+ * между их собственными полями не нужна (лесенка 90 мс — приём для полей
+ * внутри одного одновременно видимого блока, как в Hero, а не для списка).
  */
 import type { CollectionEntry } from 'astro:content';
 import CaseMedia from './CaseMedia.astro';
@@ -32,7 +39,7 @@ const { title, year, summary, video, poster } = work.data;
 const href = withBase(`works/${work.id}/`);
 ---
 
-<li class="case-row">
+<li class="case-row" data-reveal>
 	<a class="case-row__link" href={href}>
 		<div class="case-row__header">
 			<h3 class="case-row__title">{title}</h3>

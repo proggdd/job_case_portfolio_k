@@ -8,16 +8,35 @@
  * по центру без привязки к ширине аватара. Инженерное решение, не значение
  * из спецификации.
  *
- * Блюр подложки и переключение цвета над тёмным блоком кейса — отдельные
- * анимации из DESIGN.md §4 (нужны высота героя и скролл-триггер, обе
- * отложены до P5-T5). Числового радиуса блюра в токенах нет —
- * без него подложка сейчас непрозрачная, цветом --color-surface
- * («подложка группы пилюль» в DESIGN.md §2).
+ * Блюр подложки и переключение цвета над тёмным блоком кейса — отдельная
+ * анимация из DESIGN.md §4 (переключение цвета над тёмным блоком кейса не
+ * входит в карточки Ф11, остаётся отложенной). Числового радиуса блюра
+ * в токенах нет — без него подложка сейчас непрозрачная, цветом
+ * --color-surface («подложка группы пилюль» в DESIGN.md §2).
+ *
+ * P11-T2 (05.08.2026) — DESIGN.md §3 «Поведение шапки и подвала», §4:
+ * два независимых состояния через классы is-compact/is-hidden, оба
+ * переключаются IntersectionObserver'ом, не обработчиком scroll (DESIGN.md
+ * §3: «через IntersectionObserver, не по обработчику scroll — обработчик
+ * на каждый пиксель прокрутки бьёт по производительности»).
+ *
+ * — is-compact включается, когда [data-viewport-sentinel] (Base.astro,
+ *   высота 100vh) уходит из вида — то есть прокрутили дальше первого экрана.
+ * — is-hidden включается, когда [data-footer] (Footer.astro) появляется
+ *   в поле зрения, и снимается, как только подвал снова не виден —
+ *   при прокрутке вверх шапка возвращается автоматически, отдельного кода
+ *   для «обратно» не нужно, это то же состояние at rest.
+ *
+ * Конкретные размеры сжатого состояния (44×44 аватар, 44px группа пилюль —
+ * сама пилюля 37px не трогается, ей хватает слаку в укороченной группе) не
+ * заданы в DESIGN.md — там только качественное «уменьшаются» — инженерный
+ * дефолт по образцу решений P4-T2/P5-T1 для незафиксированных чисел:
+ * заметная, но не карикатурная разница с обычным состоянием (61→44, ~72%).
  */
 import ContactPills from './ContactPills.astro';
 ---
 
-<header class="site-header">
+<header class="site-header" data-header>
 	<div class="site-header__inner container">
 		<div class="avatar" aria-hidden="true"></div>
 		<div class="pill-group">
@@ -25,6 +44,28 @@ import ContactPills from './ContactPills.astro';
 		</div>
 	</div>
 </header>
+
+<script>
+	const header = document.querySelector<HTMLElement>('[data-header]');
+	const sentinel = document.querySelector<HTMLElement>('[data-viewport-sentinel]');
+	const footer = document.querySelector<HTMLElement>('[data-footer]');
+
+	if (header && sentinel) {
+		// компактность: сентинел высотой в экран ушёл из вида — пролистали дальше первого экрана
+		const compactObserver = new IntersectionObserver(([entry]) => {
+			header.classList.toggle('is-compact', !entry.isIntersecting);
+		});
+		compactObserver.observe(sentinel);
+	}
+
+	if (header && footer) {
+		// исчезновение у подвала: показался подвал — прячем шапку, ушёл из вида — возвращаем
+		const footerObserver = new IntersectionObserver(([entry]) => {
+			header.classList.toggle('is-hidden', entry.isIntersecting);
+		});
+		footerObserver.observe(footer);
+	}
+</script>
 
 <style>
 	.site-header {
@@ -36,6 +77,26 @@ import ContactPills from './ContactPills.astro';
 		   он же задаёт отступ от шапки до героя, только теперь это внутренний
 		   отступ самой шапки, а не внешний margin следующего блока. */
 		padding-block: var(--space-header-to-hero);
+		transform: translateY(0);
+		transition:
+			padding-block 300ms ease-out,
+			transform 300ms ease-out; /* DESIGN.md §4: 300 мс ease-out на оба состояния */
+	}
+
+	/* P11-T2: сжатие после первого экрана — вертикальные отступы вполовину. */
+	.site-header.is-compact {
+		padding-block: calc(var(--space-header-to-hero) / 2);
+	}
+
+	/* P11-T2: исчезновение у подвала — уезжает вверх за пределы экрана. */
+	.site-header.is-hidden {
+		transform: translateY(-100%);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.site-header {
+			transition: none; /* DESIGN.md §4: состояния переключаются мгновенно */
+		}
 	}
 
 	.site-header__inner {
@@ -50,6 +111,7 @@ import ContactPills from './ContactPills.astro';
 		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар — круг */
 		background-color: var(--color-surface); /* заглушка, DESIGN.md §6 */
 		justify-self: start;
+		transition: width 300ms ease-out, height 300ms ease-out;
 	}
 
 	.pill-group {
@@ -61,5 +123,25 @@ import ContactPills from './ContactPills.astro';
 		align-items: center;
 		background-color: var(--color-surface);
 		border-radius: var(--radius-pill-group); /* DESIGN.md §2: 24px */
+		transition: height 300ms ease-out;
+	}
+
+	/* P11-T2: сжатое состояние аватара и группы пилюль — DESIGN.md §4 «аватар
+	   и пилюли уменьшаются», числа не заданы в спецификации, инженерный
+	   дефолт ~72% от обычного размера (61 → 44). */
+	.site-header.is-compact .avatar {
+		width: 44px;
+		height: 44px;
+	}
+
+	.site-header.is-compact .pill-group {
+		height: 44px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.avatar,
+		.pill-group {
+			transition: none;
+		}
 	}
 </style>

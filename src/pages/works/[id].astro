@@ -31,7 +31,19 @@
  *
  * Возврат на главную: явная ссылка в начале страницы. Шапка сейчас не
  * даёт такой ссылки — аватар в Header.astro не обёрнут в <a> (P5-T1),
- * трогать шапку вне границ этой карточки (правило 7 мастер-плана).
+ * трогать шапку вне границ этой карточки (правило 7 мастер-плана). С P11-T3
+ * такая же ссылка есть и в подвале (Footer.astro) — не дублирование
+ * по ошибке, а расчёт на то, что после исчезновения шапки у подвала
+ * (P11-T2) до верхней ссылки пришлось бы скроллить обратно.
+ *
+ * P11-T5: data-reveal на header/медиа/контент/галерею/нав — «блоки страницы
+ * кейса» из DESIGN.md §4. Ссылка «На главную» этим приёмом не помечена —
+ * она мелкий навигационный элемент в одну строку, а не блок. CaseMedia,
+ * CaseGallery и CaseNav — самостоятельные компоненты без своего data-reveal
+ * внутри (переиспользуются и на главной, и в подвале, где отдельная
+ * анимация появления не нужна — CaseRow.astro уже помечает d-reveal всю
+ * строку целиком, а подвал вообще исключён карточкой), поэтому здесь
+ * обёрнуты в свои <div data-reveal> снаружи, без правок самих компонентов.
  */
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
@@ -64,11 +76,11 @@ const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIn
 const base = withBase('');
 ---
 
-<Base title={`${title} — Кирилл Колобанов`}>
+<Base title={`${title} — Кирилл Колобанов`} nextWork={nextWork}>
 	<article class="container case-page">
 		<a class="case-page__back" href={base}>← На главную</a>
 
-		<header class="case-page__header">
+		<header class="case-page__header" data-reveal>
 			<h1 class="case-page__title">{title}</h1>
 			<dl class="case-page__meta">
 				<div class="case-page__meta-item">
@@ -86,15 +98,21 @@ const base = withBase('');
 			</dl>
 		</header>
 
-		<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+		<div data-reveal>
+			<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+		</div>
 
-		<div class="case-page__content">
+		<div class="case-page__content" data-reveal>
 			<Content />
 		</div>
 
-		<CaseGallery images={images} title={title} />
+		<div data-reveal>
+			<CaseGallery images={images} title={title} />
+		</div>
 
-		<CaseNav prev={prevWork} next={nextWork} />
+		<div data-reveal>
+			<CaseNav prev={prevWork} next={nextWork} />
+		</div>
 	</article>
 </Base>
 
