@@ -19,6 +19,7 @@
  */
 import type { CollectionEntry } from 'astro:content';
 import CaseMedia from './CaseMedia.astro';
+import { withBase } from '../lib/url';
 
 interface Props {
 	work: CollectionEntry<'works'>;
@@ -28,7 +29,7 @@ interface Props {
 
 const { work, eager = false } = Astro.props;
 const { title, year, summary, video, poster } = work.data;
-const href = `${import.meta.env.BASE_URL}works/${work.id}/`;
+const href = withBase(`works/${work.id}/`);
 ---
 
 <li class="case-row">

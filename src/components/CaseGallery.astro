@@ -16,6 +16,8 @@
  * номеру; станет осмысленным по факту при наполнении в P6-T2
  * (навык portfolio-add-work).
  */
+import { withBase } from '../lib/url';
+
 interface Props {
 	images: string[];
 	title: string;
@@ -23,9 +25,8 @@ interface Props {
 
 const { images, title } = Astro.props;
 
-/* Пути относительные, склейка с BASE_URL — как в CaseMedia (иначе 404 в подкаталоге Pages). */
-const base = import.meta.env.BASE_URL;
-const sources = images.map((path) => `${base}${path.replace(/^\//, '')}`);
+/* Пути относительные, склейка — через общий withBase (src/lib/url.ts). */
+const sources = images.map((path) => withBase(path));
 ---
 
 {

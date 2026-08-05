@@ -4,7 +4,7 @@ year: 2026
 summary: "Заглушка подзаголовка — реальный текст появится в Ф6 (P6-T2)."
 role: "Заглушка роли"
 segment: B2B
-poster: media/jobs-cover.webp
+poster: media/jobs/cover.webp
 featured: true
 order: 2
 ---

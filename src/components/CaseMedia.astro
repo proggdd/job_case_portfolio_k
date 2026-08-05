@@ -24,6 +24,7 @@
  * постеров, задача P6-T1 (конвейер изображений).
  */
 import type { CollectionEntry } from 'astro:content';
+import { withBase } from '../lib/url';
 
 interface Props {
 	video?: CollectionEntry<'works'>['data']['video'];
@@ -43,8 +44,6 @@ const loading = eager ? undefined : 'lazy';
  * «/media/…» на GitHub Pages даёт 404: сайт живёт в подкаталоге
  * /job_case_portfolio_k/. Та же ловушка, что была с фавиконками после P3-T2.
  */
-const base = import.meta.env.BASE_URL;
-const withBase = (path?: string) => (path ? `${base}${path.replace(/^\//, '')}` : undefined);
 const videoSrc = withBase(video);
 const posterSrc = withBase(poster);
 ---

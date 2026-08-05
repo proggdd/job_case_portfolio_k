@@ -38,6 +38,7 @@ import Base from '../../layouts/Base.astro';
 import CaseMedia from '../../components/CaseMedia.astro';
 import CaseGallery from '../../components/CaseGallery.astro';
 import CaseNav from '../../components/CaseNav.astro';
+import { withBase } from '../../lib/url';
 
 export async function getStaticPaths() {
 	const works = await getCollection('works');
@@ -60,7 +61,7 @@ const currentIndex = orderedWorks.findIndex((entry) => entry.id === work.id);
 const prevWork = currentIndex > 0 ? orderedWorks[currentIndex - 1] : undefined;
 const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIndex + 1] : undefined;
 
-const base = import.meta.env.BASE_URL;
+const base = withBase('');
 ---
 
 <Base title={`${title} — Кирилл Колобанов`}>

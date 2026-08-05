@@ -29,8 +29,9 @@
  * сайта.
  */
 import Base from '../layouts/Base.astro';
+import { withBase } from '../lib/url';
 
-const base = import.meta.env.BASE_URL;
+const base = withBase('');
 ---
 
 <Base title="Страница не найдена — Кирилл Колобанов">

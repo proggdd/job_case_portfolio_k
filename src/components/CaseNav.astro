@@ -8,6 +8,7 @@
  * прямо запрещено критерием карточки P5-T3).
  */
 import type { CollectionEntry } from 'astro:content';
+import { withBase } from '../lib/url';
 
 interface Props {
 	prev?: CollectionEntry<'works'>;
@@ -15,18 +16,18 @@ interface Props {
 }
 
 const { prev, next } = Astro.props;
-const base = import.meta.env.BASE_URL;
+// пути — через общий withBase (src/lib/url.ts)
 ---
 
 <nav class="case-nav" aria-label="Соседние кейсы">
 	{prev && (
-		<a class="case-nav__link" href={`${base}works/${prev.id}/`}>
+		<a class="case-nav__link" href={withBase(`works/${prev.id}/`)}>
 			<span class="case-nav__label">Предыдущий кейс</span>
 			<span class="case-nav__title">{prev.data.title}</span>
 		</a>
 	)}
 	{next && (
-		<a class="case-nav__link case-nav__link--next" href={`${base}works/${next.id}/`}>
+		<a class="case-nav__link case-nav__link--next" href={withBase(`works/${next.id}/`)}>
 			<span class="case-nav__label">Следующий кейс</span>
 			<span class="case-nav__title">{next.data.title}</span>
 		</a>
