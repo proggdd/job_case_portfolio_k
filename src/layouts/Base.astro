@@ -105,7 +105,17 @@ const { title, showHomeLink = true, nextWork } = Astro.props;
 					},
 					{ threshold: 0.15 }
 				);
-				items.forEach((item) => observer.observe(item));
+				// Двойной requestAnimationFrame перед первым observe(): без него элементы,
+				// уже находящиеся в зоне видимости при загрузке (герой, первая карточка
+				// на высоких экранах), могли получить .is-revealed в том же кадре, что и
+				// исходное opacity: 0 — браузер ни разу не рисовал скрытое состояние,
+				// и переход был не виден вовсе (карточки просто появлялись статично).
+				// Два кадра гарантируют, что скрытое состояние успело отрисоваться.
+				requestAnimationFrame(() => {
+					requestAnimationFrame(() => {
+						items.forEach((item) => observer.observe(item));
+					});
+				});
 			}
 		</script>
 	</body>
