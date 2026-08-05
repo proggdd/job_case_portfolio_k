@@ -1,0 +1,79 @@
+---
+/*
+ * 404 — единственная оставшаяся страница из дерева DESIGN.md §3
+ * («Схема: одностраничник + страницы кейсов», зафиксирована 2026-08-04):
+ * / , /works/[id]/ , /404. Карточка P5-T4 в MASTER_PLAN шире («список
+ * работ с фильтром по категориям», «о дизайнере», «контакты», форма
+ * обратной связи) — эти страницы в замороженную архитектуру §3 не входят.
+ * Тот же приоритет уже применялся в проекте: состав подвала по §3, а не
+ * по общей формулировке карточки (P5-T1), поле «клиент» вне модели данных
+ * (P5-T3) — более детальный и замороженный раздел спецификации
+ * приоритетнее общей формулировки карточки (правило 1 мастер-плана).
+ *
+ * Отдельно по каждому пункту, которого не будет:
+ * — форма обратной связи закрыта явно, DESIGN.md §1: «Формы обратной
+ *   связи: не требуются — контакт через прямые ссылки» (уже есть,
+ *   ContactPills в шапке и подвале);
+ * — «о дизайнере» не подкреплена ни одним текстом: DESIGN.md §10 «Что
+ *   требуется от дизайнера» такую страницу не упоминает вовсе — создать
+ *   её сейчас значило бы выдумывать контент за дизайнера;
+ * — «список работ с фильтром по категориям» как отдельная страница/URL
+ *   не описана ни в §3 «Схема», ни в §3 «Компоненты».
+ *
+ * h1 — единственный на странице и описательный, не голая цифра «404»
+ * (доступность, DESIGN.md §7): цифра — декоративный элемент, скрыт от
+ * скринридера через aria-hidden.
+ *
+ * Astro при сборке кладёт 404.html в корень dist/ независимо от `base` —
+ * так и должно быть: GitHub Pages ищет 404.html в корне опубликованного
+ * сайта.
+ */
+import Base from '../layouts/Base.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<Base title="Страница не найдена — Кирилл Колобанов">
+	<div class="container not-found">
+		<p class="not-found__code" aria-hidden="true">404</p>
+		<h1 class="not-found__title">Страница не найдена</h1>
+		<p class="not-found__text">Такой страницы не существует — возможно, ссылка устарела.</p>
+		<a class="not-found__link" href={base}>← На главную</a>
+	</div>
+</Base>
+
+<style>
+	.not-found {
+		min-height: 50vh;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		gap: var(--space-case-title-to-subtitle); /* заголовок → текст, своего токена для служебной страницы в DESIGN.md нет */
+	}
+
+	.not-found__code {
+		font-family: var(--font-display);
+		font-size: var(--text-name-size); /* переиспользован токен «имя» — крупнейший размер шкалы, своей роли для служебной страницы нет */
+		line-height: var(--text-name-line-height);
+		font-weight: var(--text-name-weight);
+		color: var(--color-text-subtle);
+	}
+
+	.not-found__title {
+		font-family: var(--font-display);
+		font-size: var(--text-specialization-size); /* переиспользован токен «специализация» — второй по крупности размер шкалы */
+		line-height: var(--text-specialization-line-height);
+		font-weight: var(--text-specialization-weight);
+	}
+
+	.not-found__link {
+		margin-top: var(--space-name-to-specialization);
+		color: var(--color-text-muted);
+	}
+
+	.not-found__link:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
+		outline-offset: 4px;
+	}
+</style>
