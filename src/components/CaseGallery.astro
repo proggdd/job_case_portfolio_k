@@ -1,0 +1,64 @@
+---
+/*
+ * CaseGallery — DESIGN.md §3 «Компоненты»: состояния «заглушки, реальные
+ * изображения». Пропорции галереи в спецификации сознательно не заданы
+ * (§6: «галерея — по факту будущих изображений») — решает P6-T1, когда
+ * появятся реальные файлы. На MVP данных нет (P3-T3: `images` остаётся
+ * пустым намеренно), поэтому при пустом массиве рендерится один
+ * обобщённый слот-заглушка — не выдуманное количество будущих изображений,
+ * а индикатор места блока для проверки вёрстки. Оформлен тем же приёмом
+ * §6 (сплошная подложка --color-surface, без текста) и переиспользует
+ * аспект 5:4 и радиус `.case-media` (layout.css) — своего значения для
+ * галереи в спецификации нет, выведено из уже измеренного, по прецеденту
+ * P4-T3.
+ *
+ * `alt` для реальных изображений — по заголовку кейса и порядковому
+ * номеру; станет осмысленным по факту при наполнении в P6-T2
+ * (навык portfolio-add-work).
+ */
+interface Props {
+	images: string[];
+	title: string;
+}
+
+const { images, title } = Astro.props;
+---
+
+{
+	images.length > 0 ? (
+		<ul class="case-gallery">
+			{images.map((src, index) => (
+				<li>
+					<img
+						class="case-gallery__item"
+						src={src}
+						alt={`Кадр экрана «${title}», ${index + 1}`}
+						loading="lazy"
+						decoding="async"
+					/>
+				</li>
+			))}
+		</ul>
+	) : (
+		<div class="case-gallery-placeholder" aria-hidden="true"></div>
+	)
+}
+
+<style>
+	.case-gallery {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--space-case-to-case); /* переиспользован токен «кейс → кейс» — своего для галереи в DESIGN.md нет */
+	}
+
+	.case-gallery__item {
+		width: 100%;
+		border-radius: var(--radius-media);
+	}
+
+	.case-gallery-placeholder {
+		aspect-ratio: 5 / 4; /* переиспользован аспект .case-media, DESIGN.md §3 — своего значения для галереи нет */
+		border-radius: var(--radius-media);
+		background-color: var(--color-surface);
+	}
+</style>

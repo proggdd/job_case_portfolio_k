@@ -1,0 +1,92 @@
+---
+/*
+ * CaseNav — переход к соседним кейсам (DESIGN.md §3 «Компоненты»).
+ * Порядок соседей — по полю order, та же сортировка, что лента на главной
+ * (P5-T2), не по имени файла. Крайний кейс: недостающая сторона просто не
+ * рендерится — состояние «нет соседа» не описано ни картой задачи, ни
+ * DESIGN.md, а неактивная ссылка была бы битой ссылкой в никуда (это
+ * прямо запрещено критерием карточки P5-T3).
+ */
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	prev?: CollectionEntry<'works'>;
+	next?: CollectionEntry<'works'>;
+}
+
+const { prev, next } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<nav class="case-nav" aria-label="Соседние кейсы">
+	{prev && (
+		<a class="case-nav__link" href={`${base}works/${prev.id}/`}>
+			<span class="case-nav__label">Предыдущий кейс</span>
+			<span class="case-nav__title">{prev.data.title}</span>
+		</a>
+	)}
+	{next && (
+		<a class="case-nav__link case-nav__link--next" href={`${base}works/${next.id}/`}>
+			<span class="case-nav__label">Следующий кейс</span>
+			<span class="case-nav__title">{next.data.title}</span>
+		</a>
+	)}
+</nav>
+
+<style>
+	.case-nav {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--space-unit) * 4); /* не задано в DESIGN.md, инженерный дефолт на базовой единице, по образцу ContactPills */
+	}
+
+	.case-nav__link {
+		display: flex;
+		flex-direction: column;
+		color: inherit;
+	}
+
+	.case-nav__link:hover,
+	.case-nav__link:focus-visible {
+		text-decoration: none; /* отменяет глобальное a:hover подчёркивание — здесь подсветка заголовка, как в CaseRow */
+	}
+
+	.case-nav__link:hover .case-nav__title,
+	.case-nav__link:focus-visible .case-nav__title {
+		color: var(--color-text-muted); /* тот же приём hover, что DESIGN.md §4 задаёт для строки кейса */
+	}
+
+	.case-nav__link:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
+		outline-offset: 4px;
+	}
+
+	.case-nav__link--next {
+		text-align: right;
+	}
+
+	.case-nav__label {
+		font-family: var(--font-body);
+		font-size: var(--text-pill-size);
+		color: var(--color-text-subtle);
+	}
+
+	.case-nav__title {
+		font-family: var(--font-display);
+		font-size: var(--text-case-title-size);
+		font-weight: var(--text-case-title-weight);
+		transition: color 250ms ease-out; /* DESIGN.md §4: тот же тайминг hover, что у строки кейса */
+	}
+
+	@media (min-width: 600px) {
+		.case-nav {
+			flex-direction: row;
+			justify-content: space-between;
+			gap: calc(var(--space-unit) * 8);
+		}
+
+		.case-nav__link--next {
+			margin-left: auto;
+		}
+	}
+</style>

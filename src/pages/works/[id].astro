@@ -1,0 +1,178 @@
+---
+/*
+ * Страница кейса — DESIGN.md §3 «Схема», карточка P5-T3. Маршрут по
+ * коллекции works через getStaticPaths (Content Layer API: путь строится
+ * из entry.id, не entry.slug — известная ловушка проекта, MASTER_PLAN
+ * «Известные ловушки» п.2).
+ *
+ * Заголовок — единственный <h1> ЭТОЙ страницы (DESIGN.md §8: один H1 на
+ * страницу, у каждой страницы своя иерархия — не конфликтует с H1 «имя»
+ * на главной, это разные страницы). Стиль h1 и h2 внутри Content ниже
+ * переиспользуют токены --text-case-title-* (заголовок кейса, DESIGN.md §2):
+ * отдельной типографической роли «заголовок страницы кейса» и «подзаголовок
+ * блока кейса» в спецификации нет — не изобретено новое значение, взято
+ * уже измеренное, тем же приёмом, что число колонок сетки в P4-T3.
+ *
+ * Метаданные (DESIGN.md §3, модель данных кейса): год, роль, категория
+ * (segment). Поля «клиент» в модели нет — исключено намеренно, в макете
+ * его нет (DESIGN.md §3: «Поля client нет намеренно»); карточка в
+ * MASTER_PLAN упоминает клиента в общей формулировке, но модель данных —
+ * более детальный и замороженный источник (тот же приоритет, что был
+ * выбран для состава подвала в P5-T1, см. комментарий Footer.astro).
+ *
+ * Блоки «задача, решение, результат» — тело markdown-файла (`description`
+ * из DESIGN.md — это body коллекции, не поле схемы, P3-T3), с реальным
+ * текстом от дизайнера в Ф6 (P6-T2). На MVP — текст-рыба с той же
+ * структурой заголовков.
+ *
+ * Основное медиа кейса (video/poster) показано тем же компонентом
+ * CaseMedia, что и на главной — модель данных явно описывает `video` как
+ * «основное видео кейса», переиспользование не нарушает границы карточки.
+ *
+ * Возврат на главную: явная ссылка в начале страницы. Шапка сейчас не
+ * даёт такой ссылки — аватар в Header.astro не обёрнут в <a> (P5-T1),
+ * трогать шапку вне границ этой карточки (правило 7 мастер-плана).
+ */
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CaseMedia from '../../components/CaseMedia.astro';
+import CaseGallery from '../../components/CaseGallery.astro';
+import CaseNav from '../../components/CaseNav.astro';
+
+export async function getStaticPaths() {
+	const works = await getCollection('works');
+	return works.map((work) => ({
+		params: { id: work.id },
+		props: { work },
+	}));
+}
+
+interface Props {
+	work: CollectionEntry<'works'>;
+}
+
+const { work } = Astro.props;
+const { title, year, role, segment, video, poster, images } = work.data;
+const { Content } = await render(work);
+
+const orderedWorks = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
+const currentIndex = orderedWorks.findIndex((entry) => entry.id === work.id);
+const prevWork = currentIndex > 0 ? orderedWorks[currentIndex - 1] : undefined;
+const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIndex + 1] : undefined;
+
+const base = import.meta.env.BASE_URL;
+---
+
+<Base title={`${title} — Кирилл Колобанов`}>
+	<article class="container case-page">
+		<a class="case-page__back" href={base}>← На главную</a>
+
+		<header class="case-page__header">
+			<h1 class="case-page__title">{title}</h1>
+			<dl class="case-page__meta">
+				<div class="case-page__meta-item">
+					<dt>Год</dt>
+					<dd>{year}</dd>
+				</div>
+				<div class="case-page__meta-item">
+					<dt>Роль</dt>
+					<dd>{role}</dd>
+				</div>
+				<div class="case-page__meta-item">
+					<dt>Категория</dt>
+					<dd>{segment}</dd>
+				</div>
+			</dl>
+		</header>
+
+		<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+
+		<div class="case-page__content">
+			<Content />
+		</div>
+
+		<CaseGallery images={images} title={title} />
+
+		<CaseNav prev={prevWork} next={nextWork} />
+	</article>
+</Base>
+
+<style>
+	.case-page {
+		/* Отступ шапка → контент не дублируется здесь: его уже даёт
+		   padding-block самой шапки (Header.astro, тот же приём, что и
+		   в Hero.astro для главной) — повторное значение удвоило бы зазор. */
+		padding-bottom: var(--space-last-case-to-footer); /* тот же отступ, что перед подвалом на главной */
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-case-to-case); /* между крупными блоками страницы — токен «кейс → кейс», своего в DESIGN.md нет */
+	}
+
+	.case-page__back {
+		align-self: flex-start;
+		color: var(--color-text-muted);
+	}
+
+	.case-page__back:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
+		outline-offset: 4px;
+	}
+
+	.case-page__header {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-case-title-to-subtitle); /* заголовок → метаданные, токен «заголовок кейса → подзаголовок» */
+	}
+
+	.case-page__title {
+		font-family: var(--font-display);
+		font-size: var(--text-case-title-size); /* переиспользован токен «заголовок кейса» — своей роли для этой страницы в DESIGN.md нет */
+		line-height: var(--text-case-title-line-height);
+		font-weight: var(--text-case-title-weight);
+	}
+
+	.case-page__meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: calc(var(--space-unit) * 8) calc(var(--space-unit) * 6); /* не задано в DESIGN.md, инженерный дефолт на базовой единице */
+		font-family: var(--font-body);
+		font-size: var(--text-pill-size);
+	}
+
+	.case-page__meta-item {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--space-unit) * 1);
+	}
+
+	.case-page__meta dt {
+		color: var(--color-text-muted);
+	}
+
+	.case-page__meta dd {
+		color: var(--color-text);
+	}
+
+	/* Подзаголовки «Задача / Решение / Результат» из markdown-тела (<h2>) —
+	   роли для них в DESIGN.md §2 нет (только «заголовок кейса» 24px для
+	   строки на главной). Переопределяет здесь же глобальное правило h2
+	   из typography.css (60px, роль «специализация» героя) — то правило
+	   для героя, не для тела кейса; повторно используются токены заголовка
+	   кейса, тем же приёмом, что и h1 этой страницы выше. */
+	.case-page__content :global(h2) {
+		font-family: var(--font-display);
+		font-size: var(--text-case-title-size);
+		line-height: var(--text-case-title-line-height);
+		font-weight: var(--text-case-title-weight);
+		margin-top: var(--space-case-to-case);
+		margin-bottom: var(--space-case-title-to-subtitle);
+	}
+
+	.case-page__content :global(h2:first-child) {
+		margin-top: 0;
+	}
+
+	.case-page__content :global(p) {
+		color: var(--color-text-subtle); /* тот же цвет, что подзаголовок кейса на главной, единственный заданный текстовый цвет для длинного текста */
+	}
+</style>
