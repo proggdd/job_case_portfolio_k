@@ -96,6 +96,10 @@ const video = withBase('media/avatar/head.mp4');
 		aspect-ratio: 1 / 1;
 		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар — круг */
 		overflow: hidden;
+		/* Фон под видео — цвет страницы. Пока кадр не декодирован, <video>
+		   красится браузером в чёрный: отсюда была тёмная полоса по краю
+		   при перемотке (замечание от 05.08.2026). */
+		background-color: var(--color-bg);
 	}
 
 	.hero__poster,
@@ -174,11 +178,20 @@ const video = withBase('media/avatar/head.mp4');
 		window.addEventListener('scroll', onScroll, { passive: true });
 		onScroll();
 
+		/*
+		 * Перемотка троттлится по двум условиям: пока предыдущий seek не
+		 * завершён и пока смещение меньше половины кадра. Без этого код
+		 * дёргал currentTime 60 раз в секунду — декодер не успевал, кадр
+		 * рисовался частично, по краю круга шла тёмная полоса.
+		 */
 		const tick = () => {
 			currentPosition += (targetPosition - currentPosition) * SMOOTHING;
-			if (video.duration) {
-				// края клипа не трогаем: на самом последнем кадре часть браузеров подвисает
-				video.currentTime = Math.min(Math.max(currentPosition, 0.001), 0.999) * video.duration;
+			if (video.duration && !video.seeking) {
+				const next = Math.min(Math.max(currentPosition, 0.001), 0.999) * video.duration;
+				const frame = 1 / 15; // частота исходника
+				if (Math.abs(next - video.currentTime) > frame / 2) {
+					video.currentTime = next;
+				}
 			}
 			raf = requestAnimationFrame(tick);
 		};
