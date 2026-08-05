@@ -126,7 +126,7 @@ const video = withBase('media/avatar/head.mp4');
 	 * клипа. Если на живом сайте голова смотрит в противоположную сторону,
 	 * поменяйте на -1: это единственная строка, которую нужно трогать.
 	 */
-	const DIRECTION = 1;
+	const DIRECTION = -1;
 	const SMOOTHING = 0.12; // доля пути к цели за кадр: меньше — плавнее и «ленивее»
 
 	const media = document.querySelector<HTMLElement>('[data-hero-media]');
