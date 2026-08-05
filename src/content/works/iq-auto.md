@@ -3,7 +3,8 @@ title: IQ AUTO
 year: 2025
 summary: "Заглушка подзаголовка — реальный текст появится в Ф6 (P6-T2)."
 role: "Заглушка роли"
-segment: B2B
+segment: B2C
+poster: media/iq-auto-cover.webp
 featured: true
 order: 1
 ---

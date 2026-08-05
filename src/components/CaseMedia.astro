@@ -36,16 +36,27 @@ interface Props {
 
 const { video, poster, alt, eager = false } = Astro.props;
 const loading = eager ? undefined : 'lazy';
+
+/*
+ * Пути в данных кейса хранятся относительными («media/iq-auto-cover.webp»),
+ * без ведущего слеша, и склеиваются с BASE_URL здесь. Абсолютный путь вида
+ * «/media/…» на GitHub Pages даёт 404: сайт живёт в подкаталоге
+ * /job_case_portfolio_k/. Та же ловушка, что была с фавиконками после P3-T2.
+ */
+const base = import.meta.env.BASE_URL;
+const withBase = (path?: string) => (path ? `${base}${path.replace(/^\//, '')}` : undefined);
+const videoSrc = withBase(video);
+const posterSrc = withBase(poster);
 ---
 
 {
-	video ? (
-		<video class="case-media" muted playsinline loop preload="none" poster={poster} aria-label={alt}>
-			<source src={video} type="video/mp4" />
-			{poster && <img class="case-media" src={poster} alt={alt} loading={loading} decoding="async" />}
+	videoSrc ? (
+		<video class="case-media" muted playsinline loop preload="none" poster={posterSrc} aria-label={alt}>
+			<source src={videoSrc} type="video/mp4" />
+			{posterSrc && <img class="case-media" src={posterSrc} alt={alt} loading={loading} decoding="async" />}
 		</video>
-	) : poster ? (
-		<img class="case-media" src={poster} alt={alt} loading={loading} decoding="async" />
+	) : posterSrc ? (
+		<img class="case-media" src={posterSrc} alt={alt} loading={loading} decoding="async" />
 	) : (
 		<div class="case-media" aria-hidden="true"></div>
 	)
