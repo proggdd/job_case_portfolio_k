@@ -1,0 +1,124 @@
+---
+/*
+ * Страница контактов — заведена 05.08.2026 по прямому решению пользователя.
+ *
+ * Причина: на 375px три пилюли контактов не помещались в шапку даже с
+ * прокруткой группы (DESIGN.md §3 «Поведение шапки и подвала»). Вместо
+ * сокращения подписей до иконок — одна кнопка «Контакты» в мобильной шапке,
+ * ведущая сюда. На десктопе группа пилюль остаётся в шапке, эта страница
+ * работает как запасной адрес и не мешает.
+ *
+ * Данные — тот же модуль `src/data/contacts.ts`, что и в шапке с подвалом
+ * (DESIGN.md §3 «Контакты — один источник»): подстановка реальных ссылок
+ * после K-2 остаётся правкой одного файла.
+ */
+import Base from '../layouts/Base.astro';
+import { contacts } from '../data/contacts.ts';
+---
+
+<Base title="Контакты — Кирилл Колобанов">
+	<div class="container contacts-page">
+		<h1 class="contacts-page__title" data-reveal>Контакты</h1>
+		<p class="contacts-page__note" data-reveal style="--reveal-delay: 90ms">
+			Открыт к предложениям — пишите удобным способом.
+		</p>
+
+		<ul class="contacts-page__list">
+			{
+				contacts.map((contact, index) => (
+					<li data-reveal style={`--reveal-delay: ${180 + index * 90}ms`}>
+						<a
+							class="contacts-page__link"
+							href={contact.href}
+							target={contact.external ? '_blank' : undefined}
+							rel={contact.external ? 'noopener noreferrer' : undefined}
+						>
+							<span>{contact.label}</span>
+							<svg width="24" height="24" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+								<path
+									d="M4 12L12 4M8 4H12V8"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"></path>
+							</svg>
+							{contact.external && <span class="visually-hidden">(откроется в новом окне)</span>}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</Base>
+
+<style>
+	.contacts-page {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		padding-block: var(--space-case-to-case);
+		padding-bottom: var(--space-last-case-to-footer);
+	}
+
+	.contacts-page__note {
+		margin-top: var(--space-case-title-to-subtitle);
+		color: var(--color-text-subtle);
+	}
+
+	.contacts-page__list {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--space-unit) * 4);
+		margin-top: var(--space-specialization-to-segments);
+		width: min(420px, 100%);
+	}
+
+	.contacts-page__link {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: calc(var(--space-unit) * 2);
+		padding: calc(var(--space-unit) * 5) calc(var(--space-unit) * 6);
+		border-radius: var(--radius-pill-group);
+		background-color: var(--glass-bg);
+		border: 1px solid var(--glass-border);
+		box-shadow: var(--glass-shadow);
+		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+		-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+		font-size: var(--text-case-title-size);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: transform 250ms ease-out, box-shadow 250ms ease-out;
+	}
+
+	.contacts-page__link:hover,
+	.contacts-page__link:focus-visible {
+		text-decoration: none;
+		transform: translateY(-2px); /* DESIGN.md §4: пилюля на hover поднимается на 2px */
+	}
+
+	.contacts-page__link:focus-visible {
+		outline: 2px solid var(--color-text);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.contacts-page__link {
+			transition: none;
+		}
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+</style>

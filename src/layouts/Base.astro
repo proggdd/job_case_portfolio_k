@@ -97,10 +97,11 @@ const { title, showHomeLink = true, nextWork } = Astro.props;
 				const observer = new IntersectionObserver(
 					(entries) => {
 						for (const entry of entries) {
-							if (entry.isIntersecting) {
-								entry.target.classList.add('is-revealed');
-								observer.unobserve(entry.target);
-							}
+							// Правка 05.08.2026: класс переключается в обе стороны —
+							// элемент, ушедший из вида, снова скрывается и при
+							// следующем появлении анимируется заново (прямой запрос
+							// пользователя: «чтобы срабатывали всегда»).
+							entry.target.classList.toggle('is-revealed', entry.isIntersecting);
 						}
 					},
 					{

@@ -108,6 +108,11 @@ const video = withBase('media/avatar/head.mp4');
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		/* Правка 05.08.2026: по краям кадра оставались тёмные полосы справа
+		   и снизу — артефакт исходника. Кадр увеличен на 6% внутри круглой
+		   маски: края уходят за обрезку, лицо остаётся в центре. */
+		transform: scale(1.06);
+		transform-origin: center;
 	}
 
 	.hero__video {

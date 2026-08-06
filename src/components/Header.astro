@@ -53,14 +53,29 @@
  *     это буквально одна строка в таблице DESIGN.md §4, а не новая анимация.
  */
 import ContactPills from './ContactPills.astro';
+import { withBase } from '../lib/url';
 ---
 
 <header class="site-header" data-header>
 	<div class="site-header__inner container">
-		<div class="avatar" aria-hidden="true"></div>
+		<div class="avatar-glass">
+			<div class="avatar" aria-hidden="true"></div>
+		</div>
 		<div class="pill-group">
 			<ContactPills />
 		</div>
+		<a class="contacts-link" href={withBase('contacts/')}>
+			<span>Контакты</span>
+			<svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+				<path
+					d="M4 12L12 4M8 4H12V8"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"></path>
+			</svg>
+		</a>
 	</div>
 </header>
 
@@ -87,11 +102,16 @@ import ContactPills from './ContactPills.astro';
 </script>
 
 <style>
+	/*
+	 * Правка 05.08.2026 по прямому запросу пользователя: шапка перестала быть
+	 * сплошной полосой. Фон самой шапки прозрачный, стекло — на двух отдельных
+	 * капсулах: аватар слева и группа контактов по центру.
+	 */
 	.site-header {
 		position: sticky;
 		top: 0;
 		z-index: 10;
-		background-color: var(--color-bg);
+		background-color: transparent;
 		/* Переиспользован токен «шапка → фото героя» (20px) и сверху, и снизу:
 		   он же задаёт отступ от шапки до героя, только теперь это внутренний
 		   отступ самой шапки, а не внешний margin следующего блока. */
@@ -109,9 +129,6 @@ import ContactPills from './ContactPills.astro';
 	   §4 (значения архитектора, не замер — см. tokens.css). */
 	.site-header.is-compact {
 		padding-block: calc(var(--space-header-to-hero) / 2);
-		background-color: var(--color-surface-translucent);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px); /* Safari до сих пор требует префикс */
 	}
 
 	/* P11-T2: исчезновение у подвала — уезжает вверх за пределы экрана. */
@@ -133,17 +150,36 @@ import ContactPills from './ContactPills.astro';
 
 	@media (max-width: 599px) {
 		.site-header__inner {
-			grid-template-columns: auto minmax(0, 1fr); /* колонка пилюль может сжиматься — обязательное условие для overflow-x внутри ContactPills */
+			/* Две колонки: аватар слева, кнопка «Контакты» справа. Прокрутка
+			   группы пилюль больше не нужна — группа на мобильном скрыта. */
+			grid-template-columns: auto 1fr;
 		}
 	}
 
+	/* Матовое стекло — общий вид обеих капсул (токены в tokens.css). */
+	.avatar-glass,
+	.pill-group {
+		background-color: var(--glass-bg);
+		border: 1px solid var(--glass-border);
+		box-shadow: var(--glass-shadow);
+		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+		-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4); /* Safari требует префикс */
+	}
+
+	/* Окантовка аватара: тонкое кольцо вокруг круга, размер не меняется
+	   при скролле — «статичная» по запросу пользователя. */
+	.avatar-glass {
+		justify-self: start;
+		padding: 6px;
+		border-radius: 50%;
+		line-height: 0;
+	}
+
 	.avatar {
-		width: 72px; /* DESIGN.md §3 давал 61×61 — увеличено 05.08 по запросу пользователя, см. комментарий выше */
+		width: 72px; /* DESIGN.md §3 давал 61×61 — увеличено 05.08 по запросу пользователя */
 		height: 72px;
 		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар — круг */
 		background-color: var(--color-surface); /* заглушка, DESIGN.md §6 */
-		justify-self: start;
-		transition: width 300ms ease-out, height 300ms ease-out;
 	}
 
 	.pill-group {
@@ -163,13 +199,53 @@ import ContactPills from './ContactPills.astro';
 	   и пилюли уменьшаются», числа не заданы в спецификации, инженерный
 	   дефолт ~72% от обычного размера (72 → 52, та же пропорция, что была
 	   у прежних 61 → 44 до правки размеров 05.08). */
-	.site-header.is-compact .avatar {
-		width: 52px;
+	/* Аватар при сжатии не меняется — по запросу пользователя окантовка слева
+	   статична; сжимается только группа контактов и отступы шапки. */
+	.site-header.is-compact .pill-group {
 		height: 52px;
 	}
 
-	.site-header.is-compact .pill-group {
+	/* Мобильная замена группы: одна кнопка, ведущая на страницу контактов.
+	   Причина — на 375px три пилюли не помещаются даже с прокруткой группы
+	   (правка 05.08.2026, DESIGN.md §3). */
+	.contacts-link {
+		display: none;
+		align-items: center;
+		gap: 4px;
 		height: 52px;
+		padding-inline: calc(var(--space-unit) * 5);
+		border-radius: var(--radius-pill-group);
+		font-family: var(--font-body);
+		font-size: var(--text-pill-size);
+		font-weight: var(--text-pill-weight);
+		color: var(--color-text);
+		text-decoration: none;
+		background-color: var(--glass-bg);
+		border: 1px solid var(--glass-border);
+		box-shadow: var(--glass-shadow);
+		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+		-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+	}
+
+	.contacts-link:hover,
+	.contacts-link:focus-visible {
+		text-decoration: none;
+	}
+
+	.contacts-link:focus-visible {
+		outline: 2px solid var(--color-text);
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 599px) {
+		.pill-group {
+			display: none;
+		}
+
+		.contacts-link {
+			display: inline-flex;
+			justify-self: end;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
