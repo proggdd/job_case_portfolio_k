@@ -59,7 +59,7 @@ import { withBase } from '../lib/url';
 <header class="site-header" data-header>
 	<div class="site-header__inner container">
 		<div class="avatar-glass">
-			<div class="avatar" aria-hidden="true"></div>
+			<img class="avatar" src={withBase('media/avatar/head-poster.webp')} alt="" aria-hidden="true" width="1240" height="1240" />
 		</div>
 		<div class="pill-group">
 			<ContactPills />
@@ -186,11 +186,19 @@ import { withBase } from '../lib/url';
 		line-height: 0;
 	}
 
+	/* Правка 09.08.2026: здесь стояла пустая заглушка --color-surface (серый
+	   круг на скриншотах заказчика). Подставлен постер аватара — тот же файл,
+	   что и в герое. Чёрно-белый фильтр — DESIGN.md §2 «Прочее»: «фото аватара
+	   в шапке чёрно-белое, фото в герое цветное». Круглая маска здесь
+	   остаётся: DESIGN.md §2 снял её только с героя. */
 	.avatar {
+		display: block;
 		width: 72px; /* DESIGN.md §3 давал 61×61 — увеличено 05.08 по запросу пользователя */
 		height: 72px;
-		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар — круг */
-		background-color: var(--color-surface); /* заглушка, DESIGN.md §6 */
+		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар-миниатюра — круг */
+		object-fit: cover;
+		filter: grayscale(1); /* DESIGN.md §2 «Прочее» */
+		background-color: var(--color-surface); /* фон под загрузку файла */
 	}
 
 	.pill-group {

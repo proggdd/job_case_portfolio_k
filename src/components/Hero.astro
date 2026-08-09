@@ -55,6 +55,11 @@ const video = withBase('media/avatar/head.mp4');
 ---
 
 <section class="hero">
+	<div class="hero__text">
+		<h1 class="hero__name" data-reveal style="--reveal-delay: 90ms">Кирилл Колобанов</h1>
+		<h2 class="hero__specialization" data-reveal style="--reveal-delay: 180ms">UX/UI дизайнер, 3 года опыта</h2>
+		<p class="hero__segments" data-reveal style="--reveal-delay: 270ms">B2B, B2C</p>
+	</div>
 	<div class="hero__media" data-hero-media data-reveal style="--reveal-delay: 0ms">
 		<img class="hero__poster" src={poster} alt="Кирилл Колобанов" width="1240" height="1240" />
 		<video
@@ -67,35 +72,74 @@ const video = withBase('media/avatar/head.mp4');
 			aria-hidden="true"
 			tabindex="-1"></video>
 	</div>
-	<h1 class="hero__name" data-reveal style="--reveal-delay: 90ms">Кирилл Колобанов</h1>
-	<h2 class="hero__specialization" data-reveal style="--reveal-delay: 180ms">UX/UI дизайнер, 3 года опыта</h2>
-	<p class="hero__segments" data-reveal style="--reveal-delay: 270ms">B2B, B2C</p>
 </section>
 
 <style>
 	/*
-	 * Выравнивание по центру — из макета: фото 620×620 стоит в 408–1028 при
-	 * ширине 1440, имя 341–1100, специализация 281–1160, сегменты 631–810.
-	 * У всех четырёх блоков центр приходится на 720 — весь герой центрирован.
+	 * Правка 09.08.2026, DESIGN.md §3 блок 2 в новой редакции.
+	 * Было: вертикальный центрированный стек (фото, имя, специализация,
+	 * сегменты — все центры на 720 по замерам макета). Отменено решением
+	 * заказчика: «это должен быть единый блок, аватар и информация, кто это»,
+	 * плюс стек высотой 837px не помещался в экран (замер 09.08: 1.16 экрана
+	 * на 1280×720). Две колонки дают высоту блока по аватару, и герой
+	 * умещается целиком.
+	 *
+	 * Порядок в разметке — текст, затем медиа: так на мобильном при схлопывании
+	 * в одну колонку порядок задаётся `order`, а в DOM остаётся логичный
+	 * для скринридера (сначала кто это, потом его портрет).
 	 */
+	/* Mobile-first: одна колонка по умолчанию, две — с десктопного брейкпоинта
+	   1024px (DESIGN.md §5). На планшете 768 две колонки не работают: аватар
+	   съедал 620 из 704px контейнера, текстовой колонке оставалось 52px и имя
+	   ломалось на двенадцать строк (замер 09.08). */
 	.hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		justify-items: center;
 		text-align: center;
+		gap: var(--space-name-to-specialization);
+	}
+
+	.hero__text {
+		min-width: 0; /* грид-элемент по умолчанию не сжимается ниже содержимого */
+	}
+
+	.hero__media {
+		order: -1; /* аватар наверх; в DOM он после текста, чтобы скринридер читал сначала имя */
+	}
+
+	@media (min-width: 1024px) {
+		.hero {
+			/* Ширину колонки аватара задаёт сетка, а не сам элемент: в колонке
+			   `auto` процент считать не от чего, и она разворачивалась до
+			   внутреннего размера постера (1240px, замер 09.08).
+			   46.3% — доля аватара в контейнере по макету: 620 / 1340.
+			   Она держит текстовой колонке больше половины ширины на любом
+			   десктопе, а minmax(0, …) позволяет колонке сжаться. */
+			grid-template-columns: minmax(0, 1fr) minmax(0, min(var(--size-hero-avatar), 46.3%));
+			justify-items: stretch;
+			text-align: left;
+			align-items: center;
+		}
+
+		.hero__media {
+			order: 0; /* в две колонки порядок задаёт сетка: текст слева, аватар справа */
+		}
 	}
 
 	/*
-	 * P11-T4: круглая маска на .hero__media (border-radius + overflow:hidden)
-	 * обрезает квадратные края постера и видео физически — mix-blend-mode
-	 * больше не нужен (см. комментарий в начале файла). transform на самом
-	 * .hero__media по-прежнему не нужен: наклон применяется к <video>
-	 * (тег ниже), а не к обёртке.
+	 * Круглая маска и `transform: scale(1.06)` сняты 09.08.2026 (DESIGN.md §2,
+	 * строка «Видео-аватар в герое»). Обрезка кругом срезала подбородок на
+	 * профиле при повороте головы; масштаб 1.06 вводился 05.08 под тёмные
+	 * полосы прежнего исходника, у нового их нет. Фон нового файла после
+	 * декодирования — ровно #FFFFFF (замер ffprobe: color_range=tv, Y=235,
+	 * растяжение tv→pc даёт 255/255/255), то есть совпадает с --color-bg,
+	 * и квадратный кадр на белой странице границ не имеет.
 	 */
 	.hero__media {
-		margin-inline: auto;
 		position: relative;
-		width: min(620px, 100%);
+		width: 100%; /* 100% своей колонки, ширину которой задаёт сетка выше */
 		aspect-ratio: 1 / 1;
-		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар — круг */
-		overflow: hidden;
 		/* Фон под видео — цвет страницы. Пока кадр не декодирован, <video>
 		   красится браузером в чёрный: отсюда была тёмная полоса по краю
 		   при перемотке (замечание от 05.08.2026). */
@@ -108,11 +152,6 @@ const video = withBase('media/avatar/head.mp4');
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		/* Правка 05.08.2026: по краям кадра оставались тёмные полосы справа
-		   и снизу — артефакт исходника. Кадр увеличен на 6% внутри круглой
-		   маски: края уходят за обрезку, лицо остаётся в центре. */
-		transform: scale(1.06);
-		transform-origin: center;
 	}
 
 	.hero__video {
@@ -151,6 +190,14 @@ const video = withBase('media/avatar/head.mp4');
 		line-height: var(--text-segments-line-height);
 		font-weight: var(--text-segments-weight);
 		color: var(--color-text-muted); /* DESIGN.md §2: строка сегментов «B2B, B2C» */
+	}
+
+	/* До 1024px колонка одна и определённая, поэтому процент считается
+	   корректно и аватар ограничивается шириной контейнера. */
+	@media (max-width: 1023px) {
+		.hero__media {
+			width: min(var(--size-hero-avatar), 100%);
+		}
 	}
 </style>
 
