@@ -60,15 +60,40 @@
  */
 import ContactPills from './ContactPills.astro';
 import { withBase } from '../lib/url';
+
+interface Props {
+	/** Показывать кнопку «На главную» слева. Снята только на самой главной. */
+	showHomeLink?: boolean;
+}
+
+const { showHomeLink = true } = Astro.props;
 ---
 
 <header class="site-header" data-header>
 	<div class="site-header__inner container">
-		<div class="avatar-glass">
-			<img class="avatar" src={withBase('media/avatar/head-poster.webp')} alt="" aria-hidden="true" width="1240" height="1240" />
+		<div class="site-header__left">
+			<div class="avatar-glass">
+				<img class="avatar" src={withBase('media/avatar/head-poster.webp')} alt="" aria-hidden="true" width="1240" height="1240" />
+			</div>
+
+			{showHomeLink && (
+				<a class="home-link" href={withBase('')}>
+					<svg class="home-link__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+						<path
+							d="M20 12H4M4 12l6.5-6.5M4 12l6.5 6.5"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"></path>
+					</svg>
+					<span>На главную</span>
+				</a>
+			)}
 		</div>
 
-		<div class="contact-panel">
+		<div class="contact-slot">
+			<div class="contact-panel">
 			<span class="contact-panel__toggle" aria-hidden="true">
 				<svg class="contact-panel__toggle-icon" width="20" height="20" viewBox="0 0 24 24" focusable="false">
 					<path
@@ -82,8 +107,9 @@ import { withBase } from '../lib/url';
 				<span class="contact-panel__toggle-label">Контакты</span>
 			</span>
 
-			<div class="pill-group">
-				<ContactPills withIcons />
+				<div class="pill-group">
+					<ContactPills withIcons />
+				</div>
 			</div>
 		</div>
 
@@ -158,6 +184,34 @@ import { withBase } from '../lib/url';
 		align-items: center;
 	}
 
+	.site-header__left {
+		display: flex;
+		align-items: center;
+		gap: calc(var(--space-unit) * 2);
+	}
+
+	/*
+	 * Слот держит место под панель контактов в сетке, а сама панель в свёрнутом
+	 * состоянии позиционируется внутри него абсолютно.
+	 *
+	 * Это лечит замечание «почему страница прокручивается при наведении
+	 * на контакты»: раскрытая панель увеличивала высоту шапки, страница
+	 * переверстывалась, и доводчик прокрутки принимал сдвиг за жест
+	 * пользователя. Теперь раскрытие идёт поверх содержимого и высоту
+	 * шапки не меняет.
+	 */
+	.contact-slot {
+		position: relative;
+		justify-self: end;
+		min-height: 52px;
+		display: flex;
+		align-items: center;
+	}
+
+	.site-header.is-compact .contact-slot {
+		width: var(--size-contact-panel); /* место под панель резервирует слот, а не сама панель */
+	}
+
 	/*
 	 * Матовое стекло — общий вид капсул (токены в tokens.css).
 	 *
@@ -175,6 +229,7 @@ import { withBase } from '../lib/url';
 	 */
 	.avatar-glass,
 	.contact-panel,
+	.home-link,
 	.contacts-link {
 		background-color: var(--glass-bg);
 		border: 1px solid var(--glass-border);
@@ -224,7 +279,6 @@ import { withBase } from '../lib/url';
 	 * сетки сжата в 0fr.
 	 */
 	.contact-panel {
-		justify-self: end;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -262,6 +316,9 @@ import { withBase } from '../lib/url';
 
 	/* ── Свёрнутое состояние ─────────────────────────────────────────────── */
 	.site-header.is-compact .contact-panel {
+		position: absolute; /* раскрытие идёт поверх страницы и не меняет высоту шапки */
+		top: 0;
+		right: 0;
 		flex-direction: column;
 		align-items: stretch;
 		width: var(--size-contact-panel); /* ширина по широчайшей пилюле, чтобы список не был шире рамки */
@@ -346,6 +403,66 @@ import { withBase } from '../lib/url';
 		}
 	}
 
+	/*
+	 * «На главную» — та же стеклянная капсула, что и контакты, только слева.
+	 * Правка 09.08.2026: раньше ссылка жила внутри страницы кейса, где её
+	 * обрезала плавающая шапка и по ней нельзя было попасть — замечание
+	 * заказчика «кнопка на главную внутри вкладок сверху обрезается
+	 * и не функционирует, сделай её также как контакты но слева».
+	 * Шрифт и высота — те же токены, что у кнопки контактов.
+	 */
+	.home-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: calc(var(--space-unit) * 2);
+		height: 52px;
+		padding-inline: calc(var(--space-unit) * 5);
+		border-radius: var(--radius-pill-group);
+		font-family: var(--font-body);
+		font-size: var(--text-pill-compact-size);
+		font-weight: var(--text-pill-compact-weight);
+		color: var(--color-text);
+		white-space: nowrap;
+	}
+
+	.home-link:hover,
+	.home-link:focus-visible {
+		text-decoration: none; /* отменяет глобальное подчёркивание ссылок из typography.css */
+	}
+
+	.home-link:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
+		outline-offset: 2px;
+	}
+
+	/* Тот же капкан, что со значком чата: reset.css даёт svg display: block,
+	   и как флекс-элемент он сжимается до нулевой ширины без этой строки. */
+	.home-link__icon {
+		flex-shrink: 0;
+	}
+
+	@media (max-width: 599px) {
+		/* На мобильном подпись убирается, остаётся стрелка: рядом с кнопкой
+		   «Контакты» две подписи в ряд не помещаются на 375px. */
+		.home-link span {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
+		.home-link {
+			width: 52px;
+			padding-inline: 0;
+		}
+	}
+
 	/* Мобильная замена панели: одна кнопка, ведущая на страницу контактов.
 	   Причина — на 375px группа не помещается рядом с аватаром
 	   (правка 05.08.2026, DESIGN.md §3). */
@@ -374,12 +491,17 @@ import { withBase } from '../lib/url';
 	}
 
 	@media (max-width: 599px) {
-		.contact-panel {
+		/* Прячем слот целиком, а не только панель внутри него: слот остаётся
+		   грид-элементом и занимает вторую колонку, из-за чего кнопка
+		   «Контакты» переносилась в новую строку и шапка вырастала почти
+		   вдвое (замер 09.08: 123px вместо 71). */
+		.contact-slot {
 			display: none;
 		}
 
 		.contacts-link {
 			display: inline-flex;
+			grid-area: 1 / 2; /* та же ячейка, что освободил слот */
 			justify-self: end;
 		}
 	}

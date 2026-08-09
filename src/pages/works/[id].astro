@@ -77,15 +77,12 @@ const currentIndex = orderedWorks.findIndex((entry) => entry.id === work.id);
 const prevWork = currentIndex > 0 ? orderedWorks[currentIndex - 1] : undefined;
 const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIndex + 1] : undefined;
 
-const base = withBase('');
 ---
 
 <Base title={`${title} — Кирилл Колобанов`}>
 	<article class="container">
 		<div class="case-page case-block-width">
 			<div class="case-page__hero" data-snap>
-				<a class="case-page__back" href={base}>← На главную</a>
-
 				<header class="case-page__header" data-reveal>
 					<h1 class="case-page__title">{title}</h1>
 					<dl class="case-page__meta">
@@ -170,31 +167,14 @@ const base = withBase('');
 	 * этой пометки нет: там читают связный текст, и подтягивание мешало бы
 	 * читать, а не помогало бы ориентироваться, как в ленте карточек.
 	 */
+	/* Ссылка «На главную» отсюда убрана 09.08.2026: её обрезала плавающая
+	   шапка и по ней нельзя было попасть. Теперь это стеклянная кнопка
+	   в самой шапке слева, зеркально кнопке контактов (Header.astro),
+	   поэтому отступ сверху под неё здесь больше не нужен. */
 	.case-page__hero {
-		position: relative;
-		/* Место под абсолютно позиционированную ссылку «На главную»: её
-		   собственная высота (--text-pill-size × --text-pill-line-height —
-		   тот же расчёт, что браузер даёт строке текста этого размера) плюс
-		   небольшой зазор. Место под саму шапку добавлять не нужно: блок
-		   и так стоит в обычном потоке сразу после неё — она position: sticky
-		   и занимает свою высоту в потоке сама (замер 09.08: верх этого блока
-		   совпадает с нижним краем шапки без единого пикселя зазора). */
-		padding-top: calc((var(--text-pill-size) * var(--text-pill-line-height)) + var(--space-header-to-hero));
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-subtitle-to-media); /* заголовок → медиа, тот же токен, что «подзаголовок → медиа» на главной — своей роли для этой пары в DESIGN.md нет */
-	}
-
-	.case-page__back {
-		position: absolute;
-		top: 0; /* верх .case-page__hero и так стоит сразу под шапкой, второй раз её высоту отсчитывать не нужно */
-		left: 0;
-		color: var(--color-text-muted);
-	}
-
-	.case-page__back:focus-visible {
-		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
-		outline-offset: 4px;
 	}
 
 	/* Заголовок и метаданные — одна группа, разделённая волосяной линией:

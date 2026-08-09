@@ -40,7 +40,7 @@ import { withBase } from '../lib/url';
 
 interface Props {
 	title: string;
-	/** Ссылка «На главную» в подвале. По умолчанию true — снята только на самой главной. */
+	/** Ссылка «На главную» в шапке и подвале. По умолчанию true — снята только на самой главной. */
 	showHomeLink?: boolean;
 }
 
@@ -84,7 +84,7 @@ const { title, showHomeLink = true } = Astro.props;
 	<body>
 		<div class="viewport-sentinel" data-viewport-sentinel aria-hidden="true"></div>
 		<div class="header-sentinel" data-header-sentinel aria-hidden="true"></div>
-		<Header />
+		<Header showHomeLink={showHomeLink} />
 		<main>
 			<slot />
 		</main>
