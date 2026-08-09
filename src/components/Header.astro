@@ -1,71 +1,32 @@
 ---
 /*
- * Шапка — DESIGN.md §3, блок 1.
+ * Шапка — ветка hero-ref-2026-08-09, по референсу
+ * ../references/04_screens/Реф новый 09.08.png.
  *
- * ── Раскладка, пересмотрена 09.08.2026 ───────────────────────────────────
- * Панель контактов уехала из центра к правому краю по решению заказчика:
- * «смести шапку по правому краю, там как раз пусто, не будет мешать
- * просмотру карточек». Центр — единственное место, где плавающая шапка
- * перекрывала медиа кейса; справа от карточки поле пустое на всех ширинах,
- * потому что .case-block-width уже колонки (замер 09.08: 939 против 1436).
- * Аватар остаётся слева: он и раньше стоял у края и обзору не мешал.
+ * Отличия от main: вместо одной капсулы, которая при прокрутке сворачивалась
+ * в кнопку «Контакты» и раскрывалась столбиком, здесь ДВЕ простые кнопки
+ * без значков — «Контакты» и «Резюме». Решение заказчика: «Контакты
+ * и Резюме, 2 кнопки без значков, пусть также будут липучкой».
  *
- * ── Одна капсула, два состояния ──────────────────────────────────────────
- * Стекло живёт на самой .contact-panel, а не на её содержимом. Это прямое
- * требование заказчика: «вся рамка кнопки должна расширяться и в этой рамке
- * уже должен быть список». До этого свёрнутая кнопка и выпадающий столбик
- * были двумя отдельными капсулами разной ширины, и широкий список висел
- * под узкой кнопкой.
+ * Стиль кнопок не менялся: то же матовое стекло на токенах --glass-*.
+ * Заказчик отдельно оговорил, что кнопки нравятся именно наши, из референса
+ * взят только состав. Тёмная заливка «Резюме» из референса НЕ переносится:
+ * сплошная плашка рядом со стеклянной — два разных материала в одной строке,
+ * плюс шапка плавает над тёмными обложками кейсов, где чёрная кнопка
+ * пропадёт. Это вопрос к заказчику, а не решение исполнителя.
  *
- * Ширина в свёрнутом состоянии фиксирована токеном --size-contact-panel
- * (замер: широчайшая пилюля 172px + поля 2×12px). Раскрытие идёт только
- * по высоте, через grid-template-rows 0fr → 1fr — приём позволяет
- * анимировать раскрытие содержимого неизвестной высоты, не подставляя
- * max-height наугад.
+ * Раскрывающийся список Телеграм/Email убран: «Контакты» ведут на
+ * страницу /contacts, где те же ссылки лежат крупными строками. Механика
+ * раскрытия вместе с ней ушла, а с ней и весь класс проблем — наложение
+ * на аватар, прокрутка при наведении, вспышка списка при появлении.
  *
- * ── Два состояния панели ─────────────────────────────────────────────────
- * Наверху страницы: три пилюли значок + подпись в ряд. Подписи вернули
- * 09.08.2026 по следующей же правке заказчика после «только значки»:
- * «сверху, где значки, должны быть и подписи, чтобы было понятно что и где».
- *
- * Ниже первого экрана: панель сворачивается в кнопку «Контакты» со значком
- * чата, мельче и легче начертанием (--text-pill-compact-*). При наведении
- * или заходе с клавиатуры пилюли раскрываются ПОД кнопкой столбиком —
- * прямая формулировка заказчика: «хочу видеть эти пилюли столбиком, чтобы
- * можно было в дальнейшем просто докинуть снизу новую кнопку». Добавление
- * четвёртого контакта в src/data/contacts.ts теперь ничего не ломает.
- *
- * В каждом состоянии ровно один элемент лежит в потоке, второй — абсолютно.
- * Это не стилевая мелочь: пока обе капсулы были абсолютными, обёртка
- * .contact-panel схлопывалась в нулевую ширину, грид не резервировал под неё
- * место, и панель наезжала на аватар слева — замечание заказчика «кнопка
- * проезжает по нему с самого начала».
- *
- * Скрытое состояние уводится через opacity + pointer-events, а не
- * display: none — иначе ссылки внутри выпадали бы из порядка обхода табом,
- * и панель нельзя было бы развернуть с клавиатуры. :focus-within на обёртке
- * раскрывает её при заходе табом.
- *
- * Выпадающий столбик прижат к кнопке вплотную (top: 100%) намеренно: зазор
- * между ними стал бы мёртвой зоной, курсор пересекал бы её и панель
- * схлопывалась бы на полпути.
- *
- * is-compact вернулся после отмены 09.08 (тогда убирали укрупнение шапки на
- * первом экране). Смысл у класса теперь другой: не «уменьшить всё», а
- * «свернуть панель в кнопку». Размеры капсул при этом одинаковые в обоих
- * состояниях — то, что заказчик просил в прошлый раз, не отменяется.
- *
- * is-hidden (исчезновение у подвала) отменён 09.08.2026 — см. комментарий
- * в скрипте ниже.
+ * Аватар-кружок ЦВЕТНОЙ: фильтр grayscale снят по решению заказчика,
+ * DESIGN.md §2 «Прочее» поправлен под это в той же ветке.
  */
-import ContactPills from './ContactPills.astro';
+import { contacts } from '../data/contacts.ts';
 import { withBase } from '../lib/url';
 
-/*
- * Кнопка «На главную» здесь была недолго 09.08.2026 и переехала в нижний ряд
- * плавающих кнопок (FloatingControls.astro): заказчик попросил держать её
- * на одном уровне со стрелкой «наверх».
- */
+const resume = contacts.find((contact) => contact.icon === 'resume');
 ---
 
 <header class="site-header" data-header>
@@ -74,81 +35,27 @@ import { withBase } from '../lib/url';
 			<img class="avatar" src={withBase('media/avatar/head-thumb.webp')} alt="" aria-hidden="true" width="256" height="256" />
 		</div>
 
-		<div class="contact-slot">
-			<div class="contact-panel">
-			<span class="contact-panel__toggle" aria-hidden="true">
-				<svg class="contact-panel__toggle-icon" width="20" height="20" viewBox="0 0 24 24" focusable="false">
-					<path
-						d="M3 6.5A2 2 0 0 1 5 4.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2z"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.75"
-						stroke-linecap="round"
-						stroke-linejoin="round"></path>
-				</svg>
-				<span class="contact-panel__toggle-label">Контакты</span>
-			</span>
-
-				<div class="pill-group">
-					<ContactPills withIcons />
-				</div>
-			</div>
-		</div>
-
-		<a class="contacts-link" href={withBase('contacts/')}>
-			<span>Контакты</span>
-			<svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-				<path
-					d="M4 12L12 4M8 4H12V8"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="1.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"></path>
-			</svg>
-		</a>
+		<nav class="site-header__actions" aria-label="Связаться">
+			<a class="header-button" href={withBase('contacts/')}>Контакты</a>
+			{resume && (
+				<a
+					class="header-button"
+					href={resume.href}
+					target={resume.external ? '_blank' : undefined}
+					rel={resume.external ? 'noopener noreferrer' : undefined}
+				>
+					Резюме
+					{resume.external && <span class="visually-hidden">(откроется в новом окне)</span>}
+				</a>
+			)}
+		</nav>
 	</div>
 </header>
 
-<script>
-	const header = document.querySelector<HTMLElement>('[data-header]');
-	const sentinel = document.querySelector<HTMLElement>('[data-header-sentinel]');
-
-	if (header && sentinel) {
-		/*
-		 * Панель сворачивается сразу, как только страница тронулась с места:
-		 * сентинел высотой в саму шапку, а не в экран. Раньше наблюдали за
-		 * [data-viewport-sentinel] высотой 100vh, и кнопка появлялась только
-		 * после первого блока — замечание заказчика «почему кнопка не
-		 * скрывается сразу, а только после первого блока».
-		 * Наблюдатель, а не обработчик scroll — DESIGN.md §3.
-		 */
-		const compactObserver = new IntersectionObserver(([entry]) => {
-			header.classList.toggle('is-compact', !entry.isIntersecting);
-			/*
-			 * Переходы включаются только после первого срабатывания.
-			 * Иначе при загрузке уже прокрученной страницы класс is-compact
-			 * приходит после первой отрисовки, и переход анимирует схлопывание:
-			 * кнопка на мгновение показывалась раскрытой со списком —
-			 * замечание заказчика от 09.08.
-			 */
-			header.classList.add('is-ready');
-		});
-		compactObserver.observe(sentinel);
-	}
-
-	/*
-	 * Исчезновение шапки у подвала (P11-T2) отменено 09.08.2026 вместе
-	 * с выносом контактов из подвала. Шапка пряталась ровно потому, что
-	 * подвал дублировал контакты; теперь их там нет, и спрятанная шапка
-	 * оставила бы пользователя внизу страницы без способа связаться.
-	 */
-</script>
-
 <style>
 	/*
-	 * Фон самой шапки прозрачный, стекло — на отдельных капсулах: аватар слева
-	 * и панель контактов справа (правка 05.08.2026, раскладка — 09.08.2026).
+	 * Фон самой шапки прозрачный, стекло — на капсулах: аватар слева
+	 * и кнопки справа.
 	 */
 	.site-header {
 		position: sticky;
@@ -158,279 +65,89 @@ import { withBase } from '../lib/url';
 		padding-block: calc(var(--space-header-to-hero) / 2);
 	}
 
-	/* Аватар слева, панель контактов справа. Средней колонки больше нет:
-	   панель прижата к правому краю, центрировать нечего. */
 	.site-header__inner {
 		display: grid;
 		grid-template-columns: auto 1fr;
 		align-items: center;
 	}
 
-	/*
-	 * Слот держит место под панель контактов в сетке, а сама панель в свёрнутом
-	 * состоянии позиционируется внутри него абсолютно.
-	 *
-	 * Это лечит замечание «почему страница прокручивается при наведении
-	 * на контакты»: раскрытая панель увеличивала высоту шапки, страница
-	 * переверстывалась, и доводчик прокрутки принимал сдвиг за жест
-	 * пользователя. Теперь раскрытие идёт поверх содержимого и высоту
-	 * шапки не меняет.
-	 */
-	.contact-slot {
-		position: relative;
+	.site-header__actions {
 		justify-self: end;
-		min-height: 52px;
 		display: flex;
 		align-items: center;
-	}
-
-	.site-header.is-compact .contact-slot {
-		width: var(--size-contact-panel); /* место под панель резервирует слот, а не сама панель */
+		gap: calc(var(--space-unit) * 2);
 	}
 
 	/*
 	 * Матовое стекло — общий вид капсул (токены в tokens.css).
 	 *
-	 * Правка 08.08.2026. Здесь стояла пара объявлений: стандартное
-	 * backdrop-filter и следом -webkit-backdrop-filter «для Safari».
-	 * Минификатор счёл их дублем одного свойства и оставил в собранном CSS
-	 * только вторую, префиксную строку. Chrome алиас -webkit-backdrop-filter
-	 * больше не поддерживает (CSS.supports вернул false на живом сайте),
-	 * поэтому стекло не отрисовывалось нигде: getComputedStyle отдавал
-	 * backdrop-filter: none при корректном коде компонента.
-	 * Префиксную строку убрали: Safari работает без префикса с 18-й версии,
-	 * префикс был нужен для 15.4. Одно объявление минификатору не с чем
-	 * склеивать. Проверка после сборки — grep по dist/_astro/*.css: должно
-	 * найтись backdrop-filter без префикса.
+	 * Без -webkit-префикса намеренно: минификатор считает пару объявлений
+	 * дублем и оставляет префиксную строку, которую Chrome уже не понимает.
+	 * История в main, коммит 1778c4d.
 	 */
 	.avatar-glass,
-	.contact-panel,
-	.contacts-link {
+	.header-button {
 		background-color: var(--glass-bg);
 		border: 1px solid var(--glass-border);
 		box-shadow: var(--glass-shadow);
 		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
 	}
 
-	/* Окантовка аватара: тонкое кольцо вокруг круга.
-	   Сдвиг влево на половину поля контейнера — правка 09.08.2026 по просьбе
-	   «аватар стоит подвинуть чуть влево». Взята половина уже существующего
-	   --space-content-padding, новое значение не заводилось. */
+	/* Окантовка аватара: тонкое кольцо вокруг круга. */
 	.avatar-glass {
 		justify-self: start;
-		margin-left: calc(var(--space-content-padding) / -2);
 		padding: 6px;
 		border-radius: 50%;
 		line-height: 0;
 	}
 
-	@media (max-width: 1023px) {
-		.avatar-glass {
-			/* На планшете и мобильном поле контейнера меньше (32 и 20px),
-			   вынос за край съел бы аватар — сдвиг снимается. */
-			margin-left: 0;
-		}
-	}
-
-	/* Фото заказчика, обрезанное по голове: head-thumb.webp, 256px — запас
-	   почти впятеро от показываемых 52. Сначала здесь была пустая серая
-	   заглушка, потом постер видео-аватара из героя; 09.08.2026 заказчик
-	   прислал отдельное фото именно под этот кружок.
-	   Чёрно-белый фильтр — DESIGN.md §2 «Прочее»: «фото аватара в шапке
-	   чёрно-белое, фото в герое цветное». Сам файл цветной: так возврат
-	   к цвету остаётся снятием одной строки ниже.
-	   Круглая маска здесь остаётся: DESIGN.md §2 снял её только с героя. */
+	/* Фото заказчика, обрезанное по голове (head-thumb.webp, 256px — запас
+	   почти впятеро от показываемых 52).
+	   Цветное: фильтр grayscale снят в этой ветке по решению заказчика,
+	   DESIGN.md §2 «Прочее» обновлён.
+	   Круглая маска остаётся: §2 сняла её только с героя. */
 	.avatar {
 		display: block;
 		width: 52px;
 		height: 52px;
 		border-radius: 50%; /* DESIGN.md §2 «Скругления»: аватар-миниатюра — круг */
 		object-fit: cover;
-		filter: grayscale(1); /* DESIGN.md §2 «Прочее» */
 		background-color: var(--color-surface); /* фон под загрузку файла */
 	}
 
-	/*
-	 * Единственная капсула. Наверху страницы — ряд пилюль; ниже — кнопка,
-	 * которая по наведению вырастает вниз и показывает столбик внутри той же
-	 * рамки. overflow: hidden обязателен: он обрезает содержимое, пока строка
-	 * сетки сжата в 0fr.
-	 */
-	.contact-panel {
-		display: flex;
-		flex-direction: row;
+	.header-button {
+		display: inline-flex;
 		align-items: center;
-		min-height: 52px;
-		padding-inline: calc(var(--space-unit) * 3); /* 12px — не задан в DESIGN.md, инженерный дефолт */
+		justify-content: center;
+		height: 52px; /* та же высота, что у капсулы аватара */
+		padding-inline: calc(var(--space-unit) * 5);
 		border-radius: var(--radius-pill-group); /* DESIGN.md §2: 24px */
-		overflow: hidden;
-	}
-
-	/*
-	 * Заголовок меню крупнее списка под ним — правка 09.08.2026: «выделить
-	 * контакты побольше и под ним меньше шрифтом список».
-	 *
-	 * Выравнивание по левому краю, а не по центру, и отступ 28px: ровно
-	 * столько же до значка первой пилюли (12px поля списка + 16px поля самой
-	 * пилюли). До этого кнопка центрировала своё содержимое, и список
-	 * оказывался на 8px левее — «список чуть левее, что странно».
-	 */
-	.contact-panel__toggle {
-		display: none; /* наверху страницы кнопки нет вовсе */
-		align-items: center;
-		justify-content: flex-start;
-		gap: calc(var(--space-unit) * 2);
-		height: 52px;
-		padding-inline: calc(var(--space-unit) * 7); /* 28px — совпадает с отступом до значка пилюли */
 		font-family: var(--font-body);
-		font-size: var(--text-pill-size); /* крупнее списка: это заголовок меню */
-		font-weight: var(--text-pill-weight);
+		font-size: var(--text-pill-compact-size);
+		font-weight: var(--text-pill-compact-weight);
 		color: var(--color-text);
 		white-space: nowrap;
 	}
 
-	/* Без этого значок схлопывается в нулевую ширину: reset.css даёт всем svg
-	   display: block, и как флекс-элемент он сжимаем. Именно так 09.08.2026
-	   «пропал» значок чата (замер на живом сайте: 0×20 при заданных 20×20),
-	   а подпись рядом уезжала влево от центра кнопки. */
-	.contact-panel__toggle-icon {
-		flex-shrink: 0;
+	.header-button:hover,
+	.header-button:focus-visible {
+		text-decoration: none; /* отменяет глобальное подчёркивание ссылок из typography.css */
 	}
 
-	.pill-group {
-		display: flex;
-		align-items: center;
-	}
-
-	/* ── Свёрнутое состояние ─────────────────────────────────────────────── */
-	.site-header.is-compact .contact-panel {
-		position: absolute; /* раскрытие идёт поверх страницы и не меняет высоту шапки */
-		top: 0;
-		right: 0;
-		flex-direction: column;
-		align-items: stretch;
-		width: var(--size-contact-panel); /* ширина по широчайшей пилюле, чтобы список не был шире рамки */
-		padding-inline: 0;
-	}
-
-	.site-header.is-compact .contact-panel__toggle {
-		display: inline-flex;
-	}
-
-	/* Раскрытие по высоте: 0fr → 1fr анимирует содержимое неизвестной высоты,
-	   не требуя подставлять max-height наугад. */
-	/*
-	 * overflow: hidden здесь обязателен, а не «на всякий случай». Строка
-	 * сетки сжимается в 0px, но сам список остаётся высотой 148px и просто
-	 * вылезает из неё: пилюли рисовались поверх кнопки и над ней — «кнопка
-	 * выглядит как месиво» (замечание заказчика 09.08, подтверждено замером).
-	 * min-height: 0 на списке позволяет ему сжаться, но не заставляет;
-	 * обрезает именно контейнер.
-	 */
-	.site-header.is-compact .pill-group {
-		display: grid;
-		grid-template-rows: 0fr;
-		overflow: hidden;
-	}
-
-	.site-header.is-ready.is-compact .pill-group {
-		transition: grid-template-rows 300ms ease-out; /* DESIGN.md §4: 300 мс ease-out */
-	}
-
-	/* Список внутри ContactPills — чужая область видимости, отсюда :global.
-	   Столбик задаётся здесь, а не в самом компоненте: там он используется
-	   ещё подвалом и страницей контактов, где раскладка строкой. */
-	/* padding-bottom вынесен в состояние наведения намеренно: min-height: 0
-	   сжимает содержимое, но собственные поля элемента не сжимает, и в
-	   свёрнутом виде под кнопкой оставалась полоска в 12px (замер: капсула
-	   66px вместо 52). Поле появляется вместе с раскрытием и анимируется
-	   тем же переходом. */
-	.site-header.is-compact .pill-group :global(.contact-pills) {
-		min-height: 0; /* без этого сжатая строка сетки не сожмёт содержимое */
-		overflow: hidden;
-		flex-direction: column;
-		align-items: stretch;
-		padding-inline: calc(var(--space-unit) * 3);
-		padding-bottom: 0;
-	}
-
-	.site-header.is-ready.is-compact .pill-group :global(.contact-pills) {
-		transition: padding-bottom 300ms ease-out;
-	}
-
-	.site-header.is-compact .contact-panel:hover .pill-group :global(.contact-pills),
-	.site-header.is-compact .contact-panel:focus-within .pill-group :global(.contact-pills) {
-		padding-bottom: calc(var(--space-unit) * 3);
-	}
-
-	.site-header.is-compact .pill-group :global(.contact-pill) {
-		justify-content: flex-start; /* в столбике значки стоят по одной вертикали */
-	}
-
-	/* Список — мельче заголовка меню (правка 09.08.2026). Сначала пилюли
-	   и кнопку свели к одному шрифту по просьбе «шрифт должен быть одинаковый
-	   на кнопках», следующей же правкой заказчик попросил иерархию:
-	   «выделить контакты побольше и под ним меньше шрифтом список».
-	   Подвал и страница контактов не затронуты: там свой контекст. */
-	.contact-panel :global(.contact-pill) {
-		font-size: var(--text-pill-compact-size);
-		font-weight: var(--text-pill-compact-weight);
-	}
-
-	/* Наведение или заход с клавиатуры — рамка вырастает вниз вместе со
-	   списком. Кнопка остаётся на месте: она верх той же капсулы. */
-	.site-header.is-compact .contact-panel:hover .pill-group,
-	.site-header.is-compact .contact-panel:focus-within .pill-group {
-		grid-template-rows: 1fr;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.site-header.is-ready.is-compact .pill-group {
-			transition: none; /* DESIGN.md §4 */
-		}
-	}
-
-	/*
-	/* Мобильная замена панели: одна кнопка, ведущая на страницу контактов.
-	   Причина — на 375px группа не помещается рядом с аватаром
-	   (правка 05.08.2026, DESIGN.md §3). */
-	.contacts-link {
-		display: none;
-		align-items: center;
-		gap: 4px;
-		height: 52px;
-		padding-inline: calc(var(--space-unit) * 5);
-		border-radius: var(--radius-pill-group);
-		font-family: var(--font-body);
-		font-size: var(--text-pill-compact-size);
-		font-weight: var(--text-pill-compact-weight);
-		color: var(--color-text);
-		text-decoration: none;
-	}
-
-	.contacts-link:hover,
-	.contacts-link:focus-visible {
-		text-decoration: none;
-	}
-
-	.contacts-link:focus-visible {
-		outline: 2px solid var(--color-text);
+	.header-button:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
 		outline-offset: 2px;
 	}
 
-	@media (max-width: 599px) {
-		/* Прячем слот целиком, а не только панель внутри него: слот остаётся
-		   грид-элементом и занимает вторую колонку, из-за чего кнопка
-		   «Контакты» переносилась в новую строку и шапка вырастала почти
-		   вдвое (замер 09.08: 123px вместо 71). */
-		.contact-slot {
-			display: none;
-		}
-
-		.contacts-link {
-			display: inline-flex;
-			grid-area: 1 / 2; /* та же ячейка, что освободил слот */
-			justify-self: end;
-		}
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 </style>

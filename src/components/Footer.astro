@@ -13,24 +13,20 @@
  * незачем. Контактов внизу больше нет — спрятанная шапка оставила бы
  * пользователя в самом низу страницы вообще без способа связаться.
  *
- * Ссылка «На главную» остаётся: в теле страницы кейса её нет, а из низа
- * страницы уходить куда-то нужно.
+ * ── Ветка hero-ref-2026-08-09 ────────────────────────────────────────────
+ * Ссылка «На главную» убрана из подвала на всех страницах по решению
+ * заказчика: «кнопку на главную убрать из подвала везде, оставить липучку».
+ * Возврат на главную остаётся плавающей кнопкой в левом нижнем углу
+ * (FloatingControls.astro) — она видна на любой высоте прокрутки, а не
+ * только внизу страницы. Проп showHomeLink компонент больше не принимает.
  *
  * Высота 64px из DESIGN.md была рассчитана на подвал-с-контактами; строка
  * с текстом в неё укладывается, поэтому min-height с тем же числом сохранён.
  */
-import { withBase } from '../lib/url';
-
-interface Props {
-	showHomeLink?: boolean;
-}
-
-const { showHomeLink = true } = Astro.props;
 ---
 
 <footer class="site-footer" data-footer>
 	<div class="site-footer__inner container">
-		{showHomeLink && <a class="site-footer__home" href={withBase('')}>← На главную</a>}
 		{/*
 		  ⚠️ ЧЕРНОВИК ТЕКСТА, ждёт утверждения Кирилла (карточка K-8).
 		  Написан про подход к работе, а не про конкретные проекты: подвал
@@ -55,16 +51,6 @@ const { showHomeLink = true } = Astro.props;
 		flex-direction: column;
 		justify-content: center;
 		gap: calc(var(--space-unit) * 2);
-	}
-
-	.site-footer__home {
-		align-self: flex-start;
-		color: var(--color-text-muted); /* тот же приём, что case-page__back и not-found__link */
-	}
-
-	.site-footer__home:focus-visible {
-		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
-		outline-offset: 4px;
 	}
 
 	/* Строка-итог. Размер — токен «подзаголовок кейса», самая мелкая из уже

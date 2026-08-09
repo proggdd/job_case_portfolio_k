@@ -84,11 +84,11 @@ const { title, showHomeLink = true } = Astro.props;
 	<body>
 		<div class="viewport-sentinel" data-viewport-sentinel aria-hidden="true"></div>
 		<div class="header-sentinel" data-header-sentinel aria-hidden="true"></div>
-		<Header showHomeLink={showHomeLink} />
+		<Header />
 		<main>
 			<slot />
 		</main>
-		<Footer showHomeLink={showHomeLink} />
+		<Footer />
 		<FloatingControls showHomeLink={showHomeLink} />
 		<script>
 			/*
