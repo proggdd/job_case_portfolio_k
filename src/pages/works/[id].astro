@@ -77,46 +77,62 @@ const base = withBase('');
 ---
 
 <Base title={`${title} — Кирилл Колобанов`} nextWork={nextWork}>
-	<article class="container case-page">
-		<a class="case-page__back" href={base}>← На главную</a>
+	<article class="container">
+		<div class="case-page case-block-width">
+			<a class="case-page__back" href={base}>← На главную</a>
 
-		<header class="case-page__header" data-reveal>
-			<h1 class="case-page__title">{title}</h1>
-			<dl class="case-page__meta">
-				<div class="case-page__meta-item">
-					<dt>Год</dt>
-					<dd>{year}</dd>
-				</div>
-				<div class="case-page__meta-item">
-					<dt>Роль</dt>
-					<dd>{role}</dd>
-				</div>
-				<div class="case-page__meta-item">
-					<dt>Категория</dt>
-					<dd>{segment}</dd>
-				</div>
-			</dl>
-		</header>
+			<header class="case-page__header" data-reveal>
+				<h1 class="case-page__title">{title}</h1>
+				<dl class="case-page__meta">
+					<div class="case-page__meta-item">
+						<dt>Год</dt>
+						<dd>{year}</dd>
+					</div>
+					<div class="case-page__meta-item">
+						<dt>Роль</dt>
+						<dd>{role}</dd>
+					</div>
+					<div class="case-page__meta-item">
+						<dt>Категория</dt>
+						<dd>{segment}</dd>
+					</div>
+				</dl>
+			</header>
 
-		<div data-reveal>
-			<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
-		</div>
+			<div data-reveal>
+				<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+			</div>
 
-		<div class="case-page__content" data-reveal>
-			<Content />
-		</div>
+			<div class="case-page__content" data-reveal>
+				<Content />
+			</div>
 
-		<div data-reveal>
-			<CaseGallery images={images} title={title} />
-		</div>
+			<div data-reveal>
+				<CaseGallery images={images} title={title} />
+			</div>
 
-		<div data-reveal>
-			<CaseNav prev={prevWork} next={nextWork} />
+			<div data-reveal>
+				<CaseNav prev={prevWork} next={nextWork} />
+			</div>
 		</div>
 	</article>
 </Base>
 
 <style>
+	/*
+	 * Правка 09.08.2026 по замечанию заказчика: «страницы, которые подключены
+	 * к карточкам внутри, тоже неказистые — небольшая картинка, надписи по
+	 * краям с равнением по левому центру, сделай красиво».
+	 *
+	 * Что было и почему выглядело так: содержимое шло во всю ширину
+	 * контейнера (1436px на 1536-м экране), а заголовок страницы стоял
+	 * в 24px — том же размере, что мелкая подпись карточки на главной.
+	 * Получалась строка текста от края до края под крошечным заголовком.
+	 *
+	 * Что стало: вся страница — одна колонка .case-block-width, ровно той же
+	 * ширины, что карточка кейса на главной. Переход с ленты на страницу
+	 * теперь не меняет ширину колонки, и это тот самый «единый блок».
+	 */
 	.case-page {
 		/* Отступ шапка → контент не дублируется здесь: его уже даёт
 		   padding-block самой шапки (Header.astro, тот же приём, что и
@@ -137,6 +153,9 @@ const base = withBase('');
 		outline-offset: 4px;
 	}
 
+	/* Заголовок и метаданные — одна группа, разделённая волосяной линией:
+	   год, роль и категория читаются как подпись под названием работы,
+	   а не как ещё один абзац текста. */
 	.case-page__header {
 		display: flex;
 		flex-direction: column;
@@ -145,15 +164,22 @@ const base = withBase('');
 
 	.case-page__title {
 		font-family: var(--font-display);
-		font-size: var(--text-case-title-size); /* переиспользован токен «заголовок кейса» — своей роли для этой страницы в DESIGN.md нет */
-		line-height: var(--text-case-title-line-height);
-		font-weight: var(--text-case-title-weight);
+		/* Переиспользован токен «специализация» (60px по замеру макета).
+		   Своей роли «заголовок страницы кейса» в DESIGN.md §2 нет, а прежние
+		   24px — размер мелкой подписи в ленте, для заголовка страницы он мал.
+		   Тот же приём переиспользования уже измеренного значения, что
+		   применён для числа колонок сетки в P4-T3. */
+		font-size: var(--text-specialization-size);
+		line-height: var(--text-specialization-line-height);
+		font-weight: var(--text-name-weight); /* полужирное, как у имени: это заголовок страницы */
 	}
 
 	.case-page__meta {
 		display: flex;
 		flex-wrap: wrap;
 		gap: calc(var(--space-unit) * 8) calc(var(--space-unit) * 6); /* не задано в DESIGN.md, инженерный дефолт на базовой единице */
+		padding-top: var(--space-case-title-to-subtitle);
+		border-top: 1px solid var(--glass-border); /* волосяная линия — токен окантовки стекла, DESIGN.md §4; своего значения для разделителя в спецификации нет */
 		font-family: var(--font-body);
 		font-size: var(--text-pill-size);
 	}
