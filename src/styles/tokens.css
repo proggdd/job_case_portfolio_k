@@ -17,6 +17,43 @@
  * при сжатии размера на узких экранах.
  */
 
+/*
+ * Шрифт — Inter, переменное начертание 400–700.
+ * Поставлен 09.08.2026 по прямому решению заказчика («поставь какой-нибудь
+ * популярный шрифт сам»). До этого сайт жил на системном шрифте в ожидании
+ * K-3 (названия и размеры с панели Figma). K-3 это не отменяет: когда
+ * дизайнер назовёт свой шрифт, правка остаётся заменой двух строк ниже,
+ * как и планировалось.
+ *
+ * Почему Inter: свободная лицензия OFL, полная кириллица, переменные веса
+ * (нужны 400, 500 и 700 — все три роли из DESIGN.md §2 покрываются одним
+ * файлом), и это фактический стандарт интерфейсной типографики, то есть
+ * «популярный» в том смысле, в котором просил заказчик.
+ *
+ * Файлы лежат в src/assets, а не в public: так сборщик сам проставляет хеш
+ * и базовый путь /job_case_portfolio_k/. Из public пришлось бы писать путь
+ * руками, а прямая склейка с BASE_URL запрещена правилом 3 AGENTS.md.
+ * Взяты только два сабсета, кириллица и латиница: 19 + 48 КБ.
+ */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../assets/fonts/inter-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   /* Цвет — DESIGN.md §2, «Цвет» ✅ измерено */
   --color-bg: #FFFFFF;
@@ -43,8 +80,9 @@
   --glass-blur: 18px;
   --glass-shadow: 0 8px 32px rgba(15, 15, 14, 0.08);
 
-  /* Шрифты — DESIGN.md §2, временное решение до K-3 */
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Шрифты — DESIGN.md §2. Замена шрифта после ответа K-3 — правка этих двух
+     строк плюс пары @font-face выше, ровно как и задумывалось правилом 2. */
+  --font-body: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-body);
 
   /* Единица шкалы — DESIGN.md §5 «Масштабирование по формату экрана»
