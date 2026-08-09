@@ -47,28 +47,46 @@
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-body);
 
-  /* Типографика — DESIGN.md §2, «Масштабирование» ✅ добавлено 05.08.2026 */
-  --text-name-size: clamp(34px, 5.56vw, 80px);
+  /* Единица шкалы — DESIGN.md §5 «Масштабирование по формату экрана»
+     ✅ добавлено 09.08.2026 по решению заказчика («не понимаю, почему масштаб
+     не подстраивается сам под формат и устройство»).
+
+     Было: каждый размер = clamp(мин, N·vw, макс). Высота окна не участвовала
+     нигде, поэтому на 1280×720 герой занимал 1.16 экрана, а блок кейса 1.42.
+
+     1.6 — пропорция эталона макета (1440 / 900), не подобранное число.
+     На экране этой пропорции min() выбирает первую ветку, и все значения
+     остаются ровно теми же, что были до правки. На более низком экране
+     выигрывает вторая ветка и вся шкала сжимается по высоте.
+     svh, а не vh: на мобильных скрывающаяся адресная строка меняет vh
+     и дёргает раскладку. */
+  --scale: min(1vw, 1.6svh);
+
+  /* Типографика — DESIGN.md §2 «Масштабирование» + §5.
+     Коэффициенты те же, что стояли в столбце «vw» таблицы §2: замер макета
+     ÷ 14.4 (то есть ÷ 1440/100). Новых чисел здесь нет, изменилась только
+     единица, на которую они умножаются. Минимумы и максимумы прежние. */
+  --text-name-size: clamp(34px, calc(5.56 * var(--scale)), 80px);
   --text-name-line-height: 1; /* 80/80, DESIGN.md §2 */
   --text-name-weight: 700; /* полужирное */
 
-  --text-specialization-size: clamp(22px, 4.17vw, 60px);
+  --text-specialization-size: clamp(22px, calc(4.17 * var(--scale)), 60px);
   --text-specialization-line-height: 1; /* 60/60 */
   --text-specialization-weight: 400; /* обычное */
 
-  --text-segments-size: clamp(18px, 3.33vw, 48px);
+  --text-segments-size: clamp(18px, calc(3.33 * var(--scale)), 48px);
   --text-segments-line-height: 0.83; /* 40/48 */
   --text-segments-weight: 400; /* обычное */
 
-  --text-case-title-size: clamp(18px, 1.67vw, 24px);
+  --text-case-title-size: clamp(18px, calc(1.67 * var(--scale)), 24px);
   --text-case-title-line-height: 1; /* 24/24 */
   --text-case-title-weight: 700; /* полужирное */
 
-  --text-year-size: clamp(16px, 1.67vw, 24px);
+  --text-year-size: clamp(16px, calc(1.67 * var(--scale)), 24px);
   --text-year-line-height: 1; /* 24/24 */
   --text-year-weight: 700; /* полужирное */
 
-  --text-case-subtitle-size: clamp(16px, 1.67vw, 24px);
+  --text-case-subtitle-size: clamp(16px, calc(1.67 * var(--scale)), 24px);
   --text-case-subtitle-line-height: 1.46; /* 35/24, DESIGN.md §2 пример расчёта */
   --text-case-subtitle-weight: 400; /* обычное */
 
@@ -94,6 +112,25 @@
   --space-unit: 4px;
   --content-max-width: 1340px;
   --space-content-padding: 50px;
+
+  /* Ширина видео-аватара — DESIGN.md §5.
+     Три ограничения: замер макета, ширина контейнера и высота окна.
+     68.9svh = 620 / 900, та же пропорция эталона, что и у --scale.
+
+     Через var(--scale) не выражается: у --scale есть ветка 1vw, и на телефоне
+     она давала аватар в 158px (замер 09.08 на 375px). Ширинная ветка шкалы
+     здесь вредна, высотная нужна.
+
+     Процента (100%) в токене нет намеренно: значение подставляется в
+     grid-колонку, а в колонке `auto` процент считать не от чего — колонка
+     разворачивалась до внутреннего размера постера, 1240px (замер 09.08).
+     Ограничение по ширине даёт сама сетка через minmax(0, …) в Hero.astro. */
+  --size-hero-avatar: min(620px, 68.9svh);
+
+  /* Высота сжатой шапки целиком: капсула 52px (Header.astro, состояние
+     is-compact) плюс её вертикальные поля. Нужна блокам, чтобы плавающая
+     шапка не наезжала на заголовок — DESIGN.md §5. */
+  --space-sticky-header: calc(52px + var(--space-header-to-hero));
   --space-header-to-hero: min(20px, 1.39vw);
   --space-photo-to-name: 0px;
   --space-name-to-specialization: min(32px, 2.22vw);

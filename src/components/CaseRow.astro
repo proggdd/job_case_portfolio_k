@@ -51,6 +51,13 @@ const href = withBase(`works/${work.id}/`);
 </li>
 
 <style>
+	/* DESIGN.md §5: плавающая шапка наезжала на заголовок кейса при прокрутке
+	   (замечание заказчика 09.08 со скриншотами) — блок отодвигается на её
+	   высоту. Шапка при этом остаётся плавающей над медиа, как задумано в §4. */
+	.case-row {
+		padding-top: var(--space-sticky-header);
+	}
+
 	.case-row__link {
 		display: block;
 		color: inherit;
