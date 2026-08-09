@@ -10,6 +10,19 @@
  * потому что .case-block-width уже колонки (замер 09.08: 939 против 1436).
  * Аватар остаётся слева: он и раньше стоял у края и обзору не мешал.
  *
+ * ── Одна капсула, два состояния ──────────────────────────────────────────
+ * Стекло живёт на самой .contact-panel, а не на её содержимом. Это прямое
+ * требование заказчика: «вся рамка кнопки должна расширяться и в этой рамке
+ * уже должен быть список». До этого свёрнутая кнопка и выпадающий столбик
+ * были двумя отдельными капсулами разной ширины, и широкий список висел
+ * под узкой кнопкой.
+ *
+ * Ширина в свёрнутом состоянии фиксирована токеном --size-contact-panel
+ * (замер: широчайшая пилюля 172px + поля 2×12px). Раскрытие идёт только
+ * по высоте, через grid-template-rows 0fr → 1fr — приём позволяет
+ * анимировать раскрытие содержимого неизвестной высоты, не подставляя
+ * max-height наугад.
+ *
  * ── Два состояния панели ─────────────────────────────────────────────────
  * Наверху страницы: три пилюли значок + подпись в ряд. Подписи вернули
  * 09.08.2026 по следующей же правке заказчика после «только значки»:
@@ -42,7 +55,8 @@
  * «свернуть панель в кнопку». Размеры капсул при этом одинаковые в обоих
  * состояниях — то, что заказчик просил в прошлый раз, не отменяется.
  *
- * is-hidden (исчезновение у подвала) не тронут.
+ * is-hidden (исчезновение у подвала) отменён 09.08.2026 — см. комментарий
+ * в скрипте ниже.
  */
 import ContactPills from './ContactPills.astro';
 import { withBase } from '../lib/url';
@@ -90,26 +104,37 @@ import { withBase } from '../lib/url';
 
 <script>
 	const header = document.querySelector<HTMLElement>('[data-header]');
-	const sentinel = document.querySelector<HTMLElement>('[data-viewport-sentinel]');
-	const footer = document.querySelector<HTMLElement>('[data-footer]');
+	const sentinel = document.querySelector<HTMLElement>('[data-header-sentinel]');
 
 	if (header && sentinel) {
-		// панель сворачивается, когда сентинел высотой в экран ушёл из вида —
-		// то есть пролистали дальше первого экрана (DESIGN.md §3: наблюдатель,
-		// а не обработчик scroll)
+		/*
+		 * Панель сворачивается сразу, как только страница тронулась с места:
+		 * сентинел высотой в саму шапку, а не в экран. Раньше наблюдали за
+		 * [data-viewport-sentinel] высотой 100vh, и кнопка появлялась только
+		 * после первого блока — замечание заказчика «почему кнопка не
+		 * скрывается сразу, а только после первого блока».
+		 * Наблюдатель, а не обработчик scroll — DESIGN.md §3.
+		 */
 		const compactObserver = new IntersectionObserver(([entry]) => {
 			header.classList.toggle('is-compact', !entry.isIntersecting);
+			/*
+			 * Переходы включаются только после первого срабатывания.
+			 * Иначе при загрузке уже прокрученной страницы класс is-compact
+			 * приходит после первой отрисовки, и переход анимирует схлопывание:
+			 * кнопка на мгновение показывалась раскрытой со списком —
+			 * замечание заказчика от 09.08.
+			 */
+			header.classList.add('is-ready');
 		});
 		compactObserver.observe(sentinel);
 	}
 
-	if (header && footer) {
-		// исчезновение у подвала: показался подвал — прячем шапку, ушёл из вида — возвращаем
-		const footerObserver = new IntersectionObserver(([entry]) => {
-			header.classList.toggle('is-hidden', entry.isIntersecting);
-		});
-		footerObserver.observe(footer);
-	}
+	/*
+	 * Исчезновение шапки у подвала (P11-T2) отменено 09.08.2026 вместе
+	 * с выносом контактов из подвала. Шапка пряталась ровно потому, что
+	 * подвал дублировал контакты; теперь их там нет, и спрятанная шапка
+	 * оставила бы пользователя внизу страницы без способа связаться.
+	 */
 </script>
 
 <style>
@@ -123,19 +148,6 @@ import { withBase } from '../lib/url';
 		z-index: 10;
 		background-color: transparent;
 		padding-block: calc(var(--space-header-to-hero) / 2);
-		transform: translateY(0);
-		transition: transform 300ms ease-out; /* DESIGN.md §4: 300 мс ease-out */
-	}
-
-	/* Исчезновение у подвала — уезжает вверх за пределы экрана. */
-	.site-header.is-hidden {
-		transform: translateY(-100%);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.site-header {
-			transition: none; /* DESIGN.md §4: состояния переключаются мгновенно */
-		}
 	}
 
 	/* Аватар слева, панель контактов справа. Средней колонки больше нет:
@@ -162,8 +174,7 @@ import { withBase } from '../lib/url';
 	 * найтись backdrop-filter без префикса.
 	 */
 	.avatar-glass,
-	.pill-group,
-	.contact-panel__toggle,
+	.contact-panel,
 	.contacts-link {
 		background-color: var(--glass-bg);
 		border: 1px solid var(--glass-border);
@@ -206,37 +217,29 @@ import { withBase } from '../lib/url';
 		background-color: var(--color-surface); /* фон под загрузку файла */
 	}
 
-	/* Обёртка двух состояний. Ширину ей задаёт тот элемент, который в текущем
-	   состоянии лежит в потоке, — благодаря этому грид резервирует под панель
-	   место и она не наезжает на аватар. */
+	/*
+	 * Единственная капсула. Наверху страницы — ряд пилюль; ниже — кнопка,
+	 * которая по наведению вырастает вниз и показывает столбик внутри той же
+	 * рамки. overflow: hidden обязателен: он обрезает содержимое, пока строка
+	 * сетки сжата в 0fr.
+	 */
 	.contact-panel {
-		position: relative;
 		justify-self: end;
 		display: flex;
+		flex-direction: row;
 		align-items: center;
 		min-height: 52px;
-	}
-
-	.pill-group,
-	.contact-panel__toggle {
-		height: 52px;
+		padding-inline: calc(var(--space-unit) * 3); /* 12px — не задан в DESIGN.md, инженерный дефолт */
 		border-radius: var(--radius-pill-group); /* DESIGN.md §2: 24px */
-		transition: opacity 300ms ease-out; /* DESIGN.md §4: 300 мс ease-out */
-	}
-
-	.pill-group {
-		display: flex;
-		align-items: center;
-		/* 12px — внутренний боковой отступ подложки не задан в DESIGN.md, инженерный дефолт */
-		padding-inline: calc(var(--space-unit) * 3);
+		overflow: hidden;
 	}
 
 	.contact-panel__toggle {
-		display: inline-flex;
+		display: none; /* наверху страницы кнопки нет вовсе */
 		align-items: center;
 		justify-content: center;
 		gap: calc(var(--space-unit) * 2);
-		padding-inline: calc(var(--space-unit) * 5);
+		height: 52px;
 		font-family: var(--font-body);
 		font-size: var(--text-pill-compact-size);
 		font-weight: var(--text-pill-compact-weight);
@@ -252,60 +255,73 @@ import { withBase } from '../lib/url';
 		flex-shrink: 0;
 	}
 
-	/* Наверху страницы: пилюли в ряд и в потоке, свёрнутая кнопка спрятана. */
-	.contact-panel__toggle {
-		position: absolute;
-		top: 0;
-		right: 0;
-		opacity: 0;
-		pointer-events: none;
+	.pill-group {
+		display: flex;
+		align-items: center;
 	}
 
-	/* Ниже первого экрана: в потоке кнопка, пилюли уходят под неё столбиком.
-	   top: 100% вплотную — зазор стал бы мёртвой зоной, курсор пересекал бы
-	   её по пути к пилюлям и панель схлопывалась бы на полпути. */
-	.site-header.is-compact .contact-panel__toggle {
-		position: static;
-		opacity: 1;
-		pointer-events: auto;
-	}
-
-	.site-header.is-compact .pill-group {
-		position: absolute;
-		top: 100%;
-		right: 0;
-		height: auto;
+	/* ── Свёрнутое состояние ─────────────────────────────────────────────── */
+	.site-header.is-compact .contact-panel {
 		flex-direction: column;
 		align-items: stretch;
-		padding: calc(var(--space-unit) * 3);
-		opacity: 0;
-		pointer-events: none;
+		width: var(--size-contact-panel); /* ширина по широчайшей пилюле, чтобы список не был шире рамки */
+		padding-inline: 0;
+	}
+
+	.site-header.is-compact .contact-panel__toggle {
+		display: inline-flex;
+	}
+
+	/* Раскрытие по высоте: 0fr → 1fr анимирует содержимое неизвестной высоты,
+	   не требуя подставлять max-height наугад. */
+	.site-header.is-compact .pill-group {
+		display: grid;
+		grid-template-rows: 0fr;
+	}
+
+	.site-header.is-ready.is-compact .pill-group {
+		transition: grid-template-rows 300ms ease-out; /* DESIGN.md §4: 300 мс ease-out */
 	}
 
 	/* Список внутри ContactPills — чужая область видимости, отсюда :global.
 	   Столбик задаётся здесь, а не в самом компоненте: там он используется
 	   ещё подвалом и страницей контактов, где раскладка строкой. */
+	/* padding-bottom вынесен в состояние наведения намеренно: min-height: 0
+	   сжимает содержимое, но собственные поля элемента не сжимает, и в
+	   свёрнутом виде под кнопкой оставалась полоска в 12px (замер: капсула
+	   66px вместо 52). Поле появляется вместе с раскрытием и анимируется
+	   тем же переходом. */
 	.site-header.is-compact .pill-group :global(.contact-pills) {
+		min-height: 0; /* без этого сжатая строка сетки не сожмёт содержимое */
+		overflow: hidden;
 		flex-direction: column;
 		align-items: stretch;
+		padding-inline: calc(var(--space-unit) * 3);
+		padding-bottom: 0;
+	}
+
+	.site-header.is-ready.is-compact .pill-group :global(.contact-pills) {
+		transition: padding-bottom 300ms ease-out;
+	}
+
+	.site-header.is-compact .contact-panel:hover .pill-group :global(.contact-pills),
+	.site-header.is-compact .contact-panel:focus-within .pill-group :global(.contact-pills) {
+		padding-bottom: calc(var(--space-unit) * 3);
 	}
 
 	.site-header.is-compact .pill-group :global(.contact-pill) {
-		justify-content: flex-start; /* в столбике значки должны стоять по одной вертикали */
+		justify-content: flex-start; /* в столбике значки стоят по одной вертикали */
 	}
 
-	/* Наведение или заход с клавиатуры на свёрнутую панель — столбик пилюль.
-	   Кнопка при этом остаётся видимой: она якорь, к которому примыкает
-	   столбик, и без неё курсор терял бы цель наведения. */
+	/* Наведение или заход с клавиатуры — рамка вырастает вниз вместе со
+	   списком. Кнопка остаётся на месте: она верх той же капсулы. */
 	.site-header.is-compact .contact-panel:hover .pill-group,
 	.site-header.is-compact .contact-panel:focus-within .pill-group {
-		opacity: 1;
-		pointer-events: auto;
+		grid-template-rows: 1fr;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.pill-group,
-		.contact-panel__toggle {
+		.site-header.is-ready.is-compact .pill-group {
 			transition: none; /* DESIGN.md §4 */
 		}
 	}

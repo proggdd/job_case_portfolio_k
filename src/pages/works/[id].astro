@@ -83,7 +83,7 @@ const base = withBase('');
 <Base title={`${title} — Кирилл Колобанов`}>
 	<article class="container">
 		<div class="case-page case-block-width">
-			<div class="case-page__hero">
+			<div class="case-page__hero" data-snap>
 				<a class="case-page__back" href={base}>← На главную</a>
 
 				<header class="case-page__header" data-reveal>
@@ -164,11 +164,11 @@ const base = withBase('');
 	 * position: relative на обёртке нужен, чтобы position: absolute у ссылки
 	 * (ниже) считался от неё, а не от предка выше по дереву.
 	 *
-	 * scroll-snap-align — тот же приём, что у карточек кейсов на главной
-	 * (CaseRow.astro): прокрутка останавливается на границе блока. Дальше
-	 * по странице (текст кейса, галерея, навигация) снапа нет: там читают
-	 * связный текст, и жёсткая привязка к границам блока мешала бы читать,
-	 * а не помогала бы ориентироваться, как в ленте карточек.
+	 * data-snap — тот же приём, что у карточек кейсов на главной
+	 * (CaseRow.astro): доводчик в Base.astro мягко подтягивает страницу
+	 * к границе блока. Дальше по странице (текст кейса, галерея, навигация)
+	 * этой пометки нет: там читают связный текст, и подтягивание мешало бы
+	 * читать, а не помогало бы ориентироваться, как в ленте карточек.
 	 */
 	.case-page__hero {
 		position: relative;
@@ -183,7 +183,6 @@ const base = withBase('');
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-subtitle-to-media); /* заголовок → медиа, тот же токен, что «подзаголовок → медиа» на главной — своей роли для этой пары в DESIGN.md нет */
-		scroll-snap-align: start;
 	}
 
 	.case-page__back {

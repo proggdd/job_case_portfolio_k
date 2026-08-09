@@ -39,7 +39,7 @@ const { title, year, summary, video, poster } = work.data;
 const href = withBase(`works/${work.id}/`);
 ---
 
-<li class="case-row" data-reveal>
+<li class="case-row" data-reveal data-snap>
 	<a class="case-row__link case-block-width" href={href}>
 		<div class="case-row__header">
 			<h3 class="case-row__title">{title}</h3>
@@ -54,11 +54,11 @@ const href = withBase(`works/${work.id}/`);
 	/* DESIGN.md §5: плавающая шапка наезжала на заголовок кейса при прокрутке
 	   (замечание заказчика 09.08 со скриншотами) — блок отодвигается на её
 	   высоту. Шапка при этом остаётся плавающей над медиа, как задумано в §4.
-	   scroll-snap-align довершает: прокрутка останавливается на границе блока,
-	   а не посередине (общие правила прокрутки — src/styles/layout.css). */
+	   Доводку до границы блока делает обработчик в Base.astro по атрибуту
+	   [data-snap] на этом же элементе — CSS-привязка убрана 09.08.2026,
+	   она доводила рывком (причина — в комментарии src/styles/layout.css). */
 	.case-row {
 		padding-top: var(--space-sticky-header);
-		scroll-snap-align: start;
 	}
 
 	.case-row__link {

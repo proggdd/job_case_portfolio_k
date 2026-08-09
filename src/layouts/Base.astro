@@ -66,10 +66,24 @@ const { title, showHomeLink = true } = Astro.props;
 				height: 100vh; /* один экран — приближение «высоты героя» без зависимости от того, есть ли герой на странице */
 				pointer-events: none;
 			}
+
+			/* Второй, короткий сентинел — для сворачивания панели контактов.
+			   Кнопка «наверх» по-прежнему смотрит на экранный сентинел выше:
+			   ей появляться сразу незачем, наверх и так близко. А панель
+			   должна сворачиваться, едва страница тронулась с места. */
+			.header-sentinel {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 1px;
+				height: var(--space-sticky-header);
+				pointer-events: none;
+			}
 		</style>
 	</head>
 	<body>
 		<div class="viewport-sentinel" data-viewport-sentinel aria-hidden="true"></div>
+		<div class="header-sentinel" data-header-sentinel aria-hidden="true"></div>
 		<Header />
 		<main>
 			<slot />
@@ -124,6 +138,62 @@ const { title, showHomeLink = true } = Astro.props;
 						items.forEach((item) => observer.observe(item));
 					});
 				});
+			}
+		</script>
+
+		<script>
+			/*
+			 * Мягкая доводка до блока. Заменила CSS-привязку scroll-snap
+			 * 09.08.2026 после второго замечания заказчика: «резкое
+			 * центрирование блока, он должен плавно подтягивать страницу».
+			 *
+			 * Почему не CSS. scroll-snap доводит мгновенно, и повлиять на это
+			 * нечем: scroll-behavior управляет ПРОГРАММНОЙ прокруткой, а
+			 * доводку после жеста браузер выполняет одним кадром, игнорируя
+			 * его. Первая попытка чинить это через scroll-behavior: smooth
+			 * симптом не убрала — проверено на живом сайте.
+			 *
+			 * Здесь наоборот: привязки в CSS нет вовсе, а доводку выполняет
+			 * scrollTo({ behavior: 'smooth' }) — то самое программное
+			 * перемещение, которое браузер анимирует.
+			 *
+			 * Логика повторяет режим proximity, а не mandatory: подтягиваем,
+			 * только если пользователь остановился достаточно близко к границе
+			 * блока. Порог 20% высоты экрана — то же число, что уже принято
+			 * в rootMargin наблюдателя появления блоков выше.
+			 */
+			const snapTargets = document.querySelectorAll<HTMLElement>('[data-snap]');
+			const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+			if (snapTargets.length > 0) {
+				let idleTimer = 0;
+
+				const settle = () => {
+					// ближайшая граница блока относительно верха окна
+					let nearest = Infinity;
+					for (const target of snapTargets) {
+						const offset = target.getBoundingClientRect().top;
+						if (Math.abs(offset) < Math.abs(nearest)) nearest = offset;
+					}
+
+					// 2px — мёртвая зона: без неё доводка запускала бы сама себя
+					// по собственным же событиям прокрутки
+					const threshold = window.innerHeight * 0.2;
+					if (Math.abs(nearest) > 2 && Math.abs(nearest) <= threshold) {
+						window.scrollTo({ top: window.scrollY + nearest, behavior: 'smooth' });
+					}
+				};
+
+				window.addEventListener(
+					'scroll',
+					() => {
+						if (reducedMotionQuery.matches) return; // движение, которого пользователь не просил
+						window.clearTimeout(idleTimer);
+						// доводим только после остановки, чтобы не бороться с жестом
+						idleTimer = window.setTimeout(settle, 140);
+					},
+					{ passive: true }
+				);
 			}
 		</script>
 	</body>
