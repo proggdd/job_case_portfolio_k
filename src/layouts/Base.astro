@@ -35,7 +35,7 @@ import '../styles/layout.css';
 import '../styles/reveal.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import BackToTop from '../components/BackToTop.astro';
+import FloatingControls from '../components/FloatingControls.astro';
 import { withBase } from '../lib/url';
 
 interface Props {
@@ -89,7 +89,7 @@ const { title, showHomeLink = true } = Astro.props;
 			<slot />
 		</main>
 		<Footer showHomeLink={showHomeLink} />
-		<BackToTop />
+		<FloatingControls showHomeLink={showHomeLink} />
 		<script>
 			/*
 			 * P11-T5: появление блоков при скролле. Один общий наблюдатель на все

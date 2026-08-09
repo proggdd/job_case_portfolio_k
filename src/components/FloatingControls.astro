@@ -1,0 +1,217 @@
+---
+/*
+ * Плавающие кнопки нижнего ряда: «На главную» слева, «Наверх» справа.
+ *
+ * Один компонент на обе, а не два независимых — прямое требование заказчика
+ * «кнопку на главную надо сделать на том же уровне что и стрелочку наверх».
+ * Общий нижний отступ и общий подъём над подвалом здесь заданы один раз,
+ * поэтому уровень не разъедется при следующей правке.
+ *
+ * До 09.08.2026 «На главную» жила сначала внутри страницы кейса (её обрезала
+ * плавающая шапка), потом в самой шапке слева. Оба варианта заказчик отклонил.
+ *
+ * Подъём над подвалом: высота подвала разная по страницам (104px на главной,
+ * 125px там, где есть ссылка), статическим отступом не покрыть — читаем
+ * фактическую высоту в момент появления подвала.
+ *
+ * Наблюдатель за подвалом получает rootMargin снизу: подъём начинается
+ * ДО того, как подвал въедет в экран. Без этого кнопки успевали наехать
+ * на серую полосу и только потом поднимались — замечание заказчика
+ * «сначала наезжают на фон подвала и потом медленно поднимаются».
+ * Длительность подъёма отдельная и короткая по той же причине.
+ */
+import { withBase } from '../lib/url';
+
+interface Props {
+	/** Показывать «На главную». Снята только на самой главной. */
+	showHomeLink?: boolean;
+}
+
+const { showHomeLink = true } = Astro.props;
+---
+
+<div class="floating-controls" data-floating-controls>
+	{showHomeLink && (
+		<a class="floating-button floating-controls__home" href={withBase('')}>
+			<svg class="floating-button__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+				<path
+					d="M20 12H4M4 12l6.5-6.5M4 12l6.5 6.5"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"></path>
+			</svg>
+			<span class="floating-button__label">На главную</span>
+		</a>
+	)}
+
+	<button class="floating-button floating-controls__top" data-back-to-top type="button" aria-label="Наверх">
+		<svg class="floating-button__icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+			<path
+				d="M10 16V4M10 4L4.5 9.5M10 4L15.5 9.5"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.75"
+				stroke-linecap="round"
+				stroke-linejoin="round"></path>
+		</svg>
+	</button>
+</div>
+
+<script>
+	const controls = document.querySelector<HTMLElement>('[data-floating-controls]');
+	const topButton = document.querySelector<HTMLElement>('[data-back-to-top]');
+	const sentinel = document.querySelector<HTMLElement>('[data-viewport-sentinel]');
+	const footer = document.querySelector<HTMLElement>('[data-footer]');
+
+	if (controls && sentinel) {
+		// на первом экране кнопки не нужны: верх и так рядом
+		const visibilityObserver = new IntersectionObserver(([entry]) => {
+			controls.classList.toggle('is-visible', !entry.isIntersecting);
+		});
+		visibilityObserver.observe(sentinel);
+	}
+
+	if (controls && footer) {
+		const liftObserver = new IntersectionObserver(
+			([entry]) => {
+				controls.style.setProperty('--floating-lift', `${footer.offsetHeight}px`);
+				controls.classList.toggle('is-lifted', entry.isIntersecting);
+			},
+			// подъём начинается, пока подвал ещё за нижним краем экрана
+			{ rootMargin: '0px 0px 120px 0px' }
+		);
+		liftObserver.observe(footer);
+	}
+
+	if (topButton) {
+		topButton.addEventListener('click', () => {
+			const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+		});
+	}
+</script>
+
+<style>
+	.floating-controls {
+		position: fixed;
+		/* Отступ от краёв — тот же, что боковое поле контейнера на десктопе
+		   (DESIGN.md §5, 50px даёт контент 1340 при 1440). */
+		left: var(--space-content-padding);
+		right: var(--space-content-padding);
+		bottom: var(--space-content-padding);
+		z-index: 10; /* тот же слой, что у шапки */
+
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		pointer-events: none; /* полоса-обёртка не должна перехватывать клики по странице */
+
+		/* Скрыты на первом экране */
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(8px);
+		transition:
+			opacity 300ms ease-out,
+			transform 300ms ease-out,
+			visibility 300ms,
+			/* Подъём над подвалом заметно быстрее появления: иначе кнопки
+			   успевают наехать на серую полосу и медленно всплывают. */
+			bottom 160ms ease-out;
+	}
+
+	.floating-controls.is-visible {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(0);
+	}
+
+	.floating-controls.is-lifted {
+		bottom: calc(var(--floating-lift, 0px) + var(--space-content-padding));
+	}
+
+	/* Правая кнопка прижата к правому краю и когда левой нет (на главной). */
+	.floating-controls__top {
+		margin-left: auto;
+	}
+
+	.floating-button {
+		pointer-events: auto; /* сами кнопки кликабельны, в отличие от обёртки */
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: calc(var(--space-unit) * 2);
+		height: 52px; /* высота капсул шапки */
+		padding-inline: calc(var(--space-unit) * 5);
+		border-radius: var(--radius-pill-group);
+		font-family: var(--font-body);
+		font-size: var(--text-pill-compact-size);
+		font-weight: var(--text-pill-compact-weight);
+		color: var(--color-text);
+
+		/* Матовое стекло — те же токены, что у капсул шапки, DESIGN.md §4.
+		   Без -webkit-префикса: минификатор схлопывает пару объявлений
+		   и оставляет префиксную строку, которую Chrome уже не понимает
+		   (история коммита 1778c4d). */
+		background-color: var(--glass-bg);
+		border: 1px solid var(--glass-border);
+		box-shadow: var(--glass-shadow);
+		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+	}
+
+	.floating-controls__top {
+		width: 52px;
+		padding-inline: 0;
+	}
+
+	.floating-button:hover,
+	.floating-button:focus-visible {
+		text-decoration: none; /* отменяет глобальное подчёркивание ссылок */
+	}
+
+	.floating-button:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
+		outline-offset: 2px;
+	}
+
+	/* Тот же капкан, что со значком чата в шапке: reset.css даёт svg
+	   display: block, и как флекс-элемент он сжимается до нулевой ширины. */
+	.floating-button__icon {
+		flex-shrink: 0;
+	}
+
+	@media (max-width: 599px) {
+		.floating-controls {
+			/* На мобильном поля контейнера 20px (DESIGN.md §5) */
+			left: 20px;
+			right: 20px;
+			bottom: 20px;
+		}
+
+		/* Подпись убирается, остаётся стрелка: на 375px две подписи
+		   в ряд с кнопкой «Наверх» не помещаются. */
+		.floating-button__label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
+		.floating-controls__home {
+			width: 52px;
+			padding-inline: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.floating-controls {
+			transition: none; /* DESIGN.md §4: состояния переключаются мгновенно */
+		}
+	}
+</style>
