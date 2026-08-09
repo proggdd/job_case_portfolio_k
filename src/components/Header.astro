@@ -156,14 +156,25 @@ import { withBase } from '../lib/url';
 		}
 	}
 
-	/* Матовое стекло — общий вид обеих капсул (токены в tokens.css). */
+	/* Матовое стекло — общий вид обеих капсул (токены в tokens.css).
+	 *
+	 * Правка 08.08.2026. Здесь стояла пара объявлений: стандартное
+	 * backdrop-filter и следом -webkit-backdrop-filter «для Safari».
+	 * Минификатор счёл их дублем одного свойства и оставил в собранном CSS
+	 * только вторую, префиксную строку. Chrome алиас -webkit-backdrop-filter
+	 * больше не поддерживает (CSS.supports вернул false на живом сайте),
+	 * поэтому стекло не отрисовывалось нигде: getComputedStyle отдавал
+	 * backdrop-filter: none при корректном коде компонента.
+	 * Префиксную строку убрали: Safari работает без префикса с 18-й версии,
+	 * префикс был нужен для 15.4. Одно объявление минификатору не с чем
+	 * склеивать. Проверка после сборки — grep по dist/_astro/*.css: должно
+	 * найтись backdrop-filter без префикса. */
 	.avatar-glass,
 	.pill-group {
 		background-color: var(--glass-bg);
 		border: 1px solid var(--glass-border);
 		box-shadow: var(--glass-shadow);
 		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
-		-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4); /* Safari требует префикс */
 	}
 
 	/* Окантовка аватара: тонкое кольцо вокруг круга, размер не меняется
@@ -190,7 +201,12 @@ import { withBase } from '../lib/url';
 		padding-inline: calc(var(--space-unit) * 3);
 		display: flex;
 		align-items: center;
-		background-color: var(--color-surface);
+		/* Правка 08.08.2026 по решению заказчика («стеклянным должен быть
+		   ободок группы, не сами пилюли»): здесь стояло
+		   background-color: var(--color-surface) — непрозрачный #F3F3F3.
+		   Правило .pill-group объявлено в этом файле дважды, и это, второе,
+		   перекрывало --glass-bg из общего правила капсул выше по порядку
+		   в источнике. Заливку задаёт только общее правило, здесь её нет. */
 		border-radius: var(--radius-pill-group); /* DESIGN.md §2: 24px */
 		transition: height 300ms ease-out;
 	}
@@ -223,8 +239,7 @@ import { withBase } from '../lib/url';
 		background-color: var(--glass-bg);
 		border: 1px solid var(--glass-border);
 		box-shadow: var(--glass-shadow);
-		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
-		-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+		backdrop-filter: blur(var(--glass-blur)) saturate(1.4); /* без -webkit-префикса, причина — в комментарии у правила капсул выше */
 	}
 
 	.contacts-link:hover,
