@@ -59,6 +59,10 @@ const video = withBase('media/avatar/head.mp4');
 		<h1 class="hero__name" data-reveal style="--reveal-delay: 90ms">Кирилл Колобанов</h1>
 		<h2 class="hero__specialization" data-reveal style="--reveal-delay: 180ms">UX/UI дизайнер, 3 года опыта</h2>
 		<p class="hero__segments" data-reveal style="--reveal-delay: 270ms">B2B, B2C</p>
+		<p class="hero__pitch" data-reveal style="--reveal-delay: 360ms">
+			Проектирую мобильные приложения и веб-сервисы: сценарии, прототип, интерфейс, передача макетов
+			в разработку. Работаю с продуктовыми командами и студиями.
+		</p>
 	</div>
 	<div class="hero__media" data-hero-media data-reveal style="--reveal-delay: 0ms">
 		<img class="hero__poster" src={poster} alt="Кирилл Колобанов" width="1240" height="1240" />
@@ -174,8 +178,12 @@ const video = withBase('media/avatar/head.mp4');
 		visibility: hidden;
 	}
 
+	/* Дисплейная гарнитура — только здесь и на заголовке страницы кейса
+	   (tokens.css, --font-accent). В ленте заголовки остаются на Inter:
+	   они стоят вплотную к постеру со своей крупной надписью. */
 	.hero__name {
 		margin-top: var(--space-photo-to-name); /* 0px, DESIGN.md §2: фото и имя примыкают */
+		font-family: var(--font-accent);
 	}
 
 	.hero__specialization {
@@ -190,6 +198,35 @@ const video = withBase('media/avatar/head.mp4');
 		line-height: var(--text-segments-line-height);
 		font-weight: var(--text-segments-weight);
 		color: var(--color-text-muted); /* DESIGN.md §2: строка сегментов «B2B, B2C» */
+	}
+
+	/*
+	 * ⚠️ ЧЕРНОВИК ТЕКСТА, ждёт утверждения Кирилла (карточка K-7).
+	 *
+	 * Добавлен 09.08.2026 по замечанию заказчика, что справа и слева аватара
+	 * пустота. Написан намеренно про автора, а не про конкретные работы:
+	 * работы будут меняться, а рамка должна оставаться универсальной — это
+	 * его же требование. Текст про кейсы устарел бы с первой заменой
+	 * портфолио, текст про то, чем человек занимается, — нет.
+	 *
+	 * Размер — токен «подзаголовок кейса» (24px), самая мелкая из уже
+	 * измеренных текстовых ролей: абзац в герое не должен спорить с именем.
+	 * Своей роли «абзац героя» в DESIGN.md §2 нет, новое значение не заведено.
+	 */
+	.hero__pitch {
+		margin-top: var(--space-name-to-specialization);
+		max-width: 34ch; /* короткая мера: абзац стоит в колонке рядом с аватаром, а не во всю страницу */
+		font-family: var(--font-body);
+		font-size: var(--text-case-subtitle-size);
+		line-height: var(--text-case-subtitle-line-height);
+		font-weight: var(--text-case-subtitle-weight);
+		color: var(--color-text-muted);
+	}
+
+	@media (max-width: 1023px) {
+		.hero__pitch {
+			margin-inline: auto; /* в одну колонку блок центрирован — абзац тоже */
+		}
 	}
 
 	/* До 1024px колонка одна и определённая, поэтому процент считается
