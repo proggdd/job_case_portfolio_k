@@ -37,6 +37,22 @@
 <script>
 	const button = document.querySelector<HTMLElement>('[data-back-to-top]');
 	const sentinel = document.querySelector<HTMLElement>('[data-viewport-sentinel]');
+	const footer = document.querySelector<HTMLElement>('[data-footer]');
+
+	if (button && footer) {
+		/*
+		 * Подъём над подвалом — правка 09.08.2026: «кнопочку наверх сделай
+		 * чуть повыше, чтобы на подвал не наезжала и была на белом фоне».
+		 * Высота подвала разная по страницам (104px на главной, 125px там,
+		 * где есть ссылка «На главную»), поэтому статическим отступом её
+		 * не покрыть — читаем фактическую высоту в момент появления подвала.
+		 */
+		const liftObserver = new IntersectionObserver(([entry]) => {
+			button.style.setProperty('--back-to-top-lift', `${footer.offsetHeight}px`);
+			button.classList.toggle('is-lifted', entry.isIntersecting);
+		});
+		liftObserver.observe(footer);
+	}
 
 	if (button && sentinel) {
 		const observer = new IntersectionObserver(([entry]) => {
@@ -80,7 +96,15 @@
 		transition:
 			opacity 300ms ease-out,
 			transform 300ms ease-out,
+			bottom 300ms ease-out,
 			visibility 300ms; /* DESIGN.md §4: 300 мс ease-out на состояния шапки, тот же тайминг */
+	}
+
+	/* Подъём над подвалом: --back-to-top-lift проставляет скрипт фактической
+	   высотой подвала (104px на главной, 125px там, где есть «На главную»).
+	   Кнопка всегда остаётся на белом фоне страницы, а не на серой полосе. */
+	.back-to-top.is-lifted {
+		bottom: calc(var(--back-to-top-lift, 0px) + var(--space-content-padding));
 	}
 
 	.back-to-top.is-visible {
