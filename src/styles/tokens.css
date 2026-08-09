@@ -218,10 +218,18 @@
      Ограничение по ширине даёт сама сетка через minmax(0, …) в Hero.astro. */
   --size-hero-avatar: min(620px, 68.9svh);
 
-  /* Высота сжатой шапки целиком: капсула 52px (Header.astro, состояние
-     is-compact) плюс её вертикальные поля. Нужна блокам, чтобы плавающая
-     шапка не наезжала на заголовок — DESIGN.md §5. */
-  --space-sticky-header: calc(52px + var(--space-header-to-hero));
+  /* Высота шапки целиком — DESIGN.md §5. Правка 09.08.2026: шапка больше
+     не меняет размер (Header.astro, отмена is-compact), это единственная
+     высота, а не «сжатая».
+     Прежняя формула (52px + space-header-to-hero) недосчитывала: 52 —
+     высота самой капсулы пилюль, но выше неё в гриде стоит капсула аватара
+     (Header.astro .avatar-glass), которая выше из-за padding 6px и border
+     1px с каждой стороны — 52 + 12 + 2 = 66px, а не 52. Плюс поле
+     padding-block считается дважды (сверху и снизу), а не один раз.
+     Формула: полное поле (сверху+снизу, оба по половине) + высота более
+     высокой капсулы. Сверено сборкой и замером [data-header].offsetHeight
+     09.08.2026 — совпало день в день. */
+  --space-sticky-header: calc(var(--space-header-to-hero) + 66px);
   --space-header-to-hero: min(20px, 1.39vw);
   --space-photo-to-name: 0px;
   --space-name-to-specialization: min(32px, 2.22vw);
