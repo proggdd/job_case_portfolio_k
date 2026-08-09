@@ -35,6 +35,10 @@
  * такая же ссылка есть и в подвале (Footer.astro) — не дублирование
  * по ошибке, а расчёт на то, что после исчезновения шапки у подвала
  * (P11-T2) до верхней ссылки пришлось бы скроллить обратно.
+ * «Следующий кейс» в подвале (CaseNav с nextWork) убран 09.08.2026 по
+ * замечанию заказчика: та же ссылка уже стоит в CaseNav ниже, в двух шагах
+ * прокрутки — там дубль без пользы, не запасной адрес. «На главную» в
+ * подвале эта логика не касается: в теле кейса такой ссылки нет вовсе.
  *
  * P11-T5: data-reveal на header/медиа/контент/галерею/нав — «блоки страницы
  * кейса» из DESIGN.md §4. Ссылка «На главную» этим приёмом не помечена —
@@ -76,31 +80,33 @@ const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIn
 const base = withBase('');
 ---
 
-<Base title={`${title} — Кирилл Колобанов`} nextWork={nextWork}>
+<Base title={`${title} — Кирилл Колобанов`}>
 	<article class="container">
 		<div class="case-page case-block-width">
-			<a class="case-page__back" href={base}>← На главную</a>
+			<div class="case-page__hero">
+				<a class="case-page__back" href={base}>← На главную</a>
 
-			<header class="case-page__header" data-reveal>
-				<h1 class="case-page__title">{title}</h1>
-				<dl class="case-page__meta">
-					<div class="case-page__meta-item">
-						<dt>Год</dt>
-						<dd>{year}</dd>
-					</div>
-					<div class="case-page__meta-item">
-						<dt>Роль</dt>
-						<dd>{role}</dd>
-					</div>
-					<div class="case-page__meta-item">
-						<dt>Категория</dt>
-						<dd>{segment}</dd>
-					</div>
-				</dl>
-			</header>
+				<header class="case-page__header" data-reveal>
+					<h1 class="case-page__title">{title}</h1>
+					<dl class="case-page__meta">
+						<div class="case-page__meta-item">
+							<dt>Год</dt>
+							<dd>{year}</dd>
+						</div>
+						<div class="case-page__meta-item">
+							<dt>Роль</dt>
+							<dd>{role}</dd>
+						</div>
+						<div class="case-page__meta-item">
+							<dt>Категория</dt>
+							<dd>{segment}</dd>
+						</div>
+					</dl>
+				</header>
 
-			<div data-reveal>
-				<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+				<div data-reveal>
+					<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+				</div>
 			</div>
 
 			<div class="case-page__content" data-reveal>
@@ -134,17 +140,56 @@ const base = withBase('');
 	 * теперь не меняет ширину колонки, и это тот самый «единый блок».
 	 */
 	.case-page {
-		/* Отступ шапка → контент не дублируется здесь: его уже даёт
-		   padding-block самой шапки (Header.astro, тот же приём, что и
-		   в Hero.astro для главной) — повторное значение удвоило бы зазор. */
 		padding-bottom: var(--space-last-case-to-footer); /* тот же отступ, что перед подвалом на главной */
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-case-to-case); /* между крупными блоками страницы — токен «кейс → кейс», своего в DESIGN.md нет */
 	}
 
+	/*
+	 * Первый шаг страницы: заголовок и картинка одним блоком, без пустоты
+	 * между ними — правка 09.08.2026 по замечанию заказчика: «в блоке должно
+	 * быть видно всё шагами, первый это картинка + надпись, сейчас пустота».
+	 *
+	 * Раньше ссылка «На главную», заголовок и медиа были прямыми детьми
+	 * .case-page и разделялись общим gap: var(--space-case-to-case) (80px)
+	 * ДВАЖДЫ — между ссылкой и заголовком, и между заголовком и медиа.
+	 * Токен «кейс → кейс» рассчитан на разделение самостоятельных секций
+	 * страницы (эту секцию от текста кейса, текст от галереи), а не связку
+	 * заголовка с его собственной иллюстрацией — отсюда и читалось как
+	 * разрыв, а не единый блок.
+	 *
+	 * Ссылка «На главную» выведена из вертикального ритма — это элемент
+	 * навигации, а не содержимое, ему нет смысла отъедать высоту у картинки.
+	 * position: relative на обёртке нужен, чтобы position: absolute у ссылки
+	 * (ниже) считался от неё, а не от предка выше по дереву.
+	 *
+	 * scroll-snap-align — тот же приём, что у карточек кейсов на главной
+	 * (CaseRow.astro): прокрутка останавливается на границе блока. Дальше
+	 * по странице (текст кейса, галерея, навигация) снапа нет: там читают
+	 * связный текст, и жёсткая привязка к границам блока мешала бы читать,
+	 * а не помогала бы ориентироваться, как в ленте карточек.
+	 */
+	.case-page__hero {
+		position: relative;
+		/* Место под абсолютно позиционированную ссылку «На главную»: её
+		   собственная высота (--text-pill-size × --text-pill-line-height —
+		   тот же расчёт, что браузер даёт строке текста этого размера) плюс
+		   небольшой зазор. Место под саму шапку добавлять не нужно: блок
+		   и так стоит в обычном потоке сразу после неё — она position: sticky
+		   и занимает свою высоту в потоке сама (замер 09.08: верх этого блока
+		   совпадает с нижним краем шапки без единого пикселя зазора). */
+		padding-top: calc((var(--text-pill-size) * var(--text-pill-line-height)) + var(--space-header-to-hero));
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-subtitle-to-media); /* заголовок → медиа, тот же токен, что «подзаголовок → медиа» на главной — своей роли для этой пары в DESIGN.md нет */
+		scroll-snap-align: start;
+	}
+
 	.case-page__back {
-		align-self: flex-start;
+		position: absolute;
+		top: 0; /* верх .case-page__hero и так стоит сразу под шапкой, второй раз её высоту отсчитывать не нужно */
+		left: 0;
 		color: var(--color-text-muted);
 	}
 
