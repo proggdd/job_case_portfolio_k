@@ -56,14 +56,18 @@ const sources = images.map((path) => withBase(path));
 		gap: var(--space-case-to-case); /* переиспользован токен «кейс → кейс» — своего для галереи в DESIGN.md нет */
 	}
 
+	/* Волосяная граница — то же решение, что у .case-media (layout.css,
+	   09.08.2026): светлый кадр не должен растворяться в белой странице. */
 	.case-gallery__item {
 		width: 100%;
 		border-radius: var(--radius-media);
+		border: 1px solid var(--glass-border);
 	}
 
 	.case-gallery-placeholder {
 		aspect-ratio: 5 / 4; /* переиспользован аспект .case-media, DESIGN.md §3 — своего значения для галереи нет */
 		border-radius: var(--radius-media);
+		border: 1px solid var(--glass-border);
 		background-color: var(--color-surface);
 	}
 </style>
