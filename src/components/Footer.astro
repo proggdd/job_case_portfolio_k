@@ -8,15 +8,16 @@
  *
  * P11-T3 (05.08.2026) — DESIGN.md §3 «Поведение шапки и подвала»: «Подвал
  * несёт не только контакты, но и навигацию: „На главную“ на всех страницах,
- * „Следующий проект“ — на странице кейса. Это компенсирует исчезнувшую
- * шапку (P11-T2): дойдя до низа, пользователь не должен скроллить обратно,
- * чтобы куда-то перейти». Порядок по карточке: навигация, затем контакты.
+ * „Следующий проект“ — на странице кейса». Порядок по карточке: навигация,
+ * затем контакты.
  *
- * «Следующий проект» переиспользует CaseNav (карточка прямо требует не
- * писать логику соседства заново) — передан только next, без prev: в
- * подвале нужна одна ссылка вперёд, а не пара «пред/след», которая уже
- * есть в теле страницы кейса. CaseNav сам ничего не рендерит, если next
- * не передан (последний кейс) — специальной обработки края не нужно.
+ * Правка 09.08.2026 по замечанию заказчика: «2 раза следующий кейс кнопка,
+ * нет смысла, убери с подвала». Ссылка «Следующий кейс» уже есть в теле
+ * страницы (CaseNav в [id].astro, сразу после текста кейса) — в подвале она
+ * была прямым дублем в двух шагах прокрутки от оригинала, а не запасным
+ * адресом после исчезнувшей шапки, как задумывалось P11-T3. Проп nextWork
+ * и CaseNav в подвале убраны. «На главную» остаётся — это единственная
+ * ссылка, которой сейчас не место в теле страницы кейса.
  *
  * Высота 64px из DESIGN.md была рассчитана на подвал-без-навигации;
  * с добавленным блоком ссылок строка перестаёт помещаться в 64px почти
@@ -24,28 +25,21 @@
  * с тем же числом — на главной подвал выглядит как раньше, на остальных
  * страницах растягивается по контенту.
  */
-import type { CollectionEntry } from 'astro:content';
-import ContactPills from './ContactPills.astro';
-import CaseNav from './CaseNav.astro';
 import { withBase } from '../lib/url';
+import ContactPills from './ContactPills.astro';
 
 interface Props {
 	showHomeLink?: boolean;
-	nextWork?: CollectionEntry<'works'>;
 }
 
-const { showHomeLink = true, nextWork } = Astro.props;
-const hasNav = showHomeLink || Boolean(nextWork);
+const { showHomeLink = true } = Astro.props;
 ---
 
 <footer class="site-footer" data-footer>
 	<div class="site-footer__inner container">
-		{hasNav && (
+		{showHomeLink && (
 			<div class="site-footer__nav">
-				{showHomeLink && (
-					<a class="site-footer__home" href={withBase('')}>← На главную</a>
-				)}
-				{nextWork && <CaseNav next={nextWork} />}
+				<a class="site-footer__home" href={withBase('')}>← На главную</a>
 			</div>
 		)}
 		<ContactPills />

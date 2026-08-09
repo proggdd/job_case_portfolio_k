@@ -16,10 +16,10 @@
  * позиционированного предка ставит его в начало документа и не смещает
  * остальную вёрстку (containing block — не body, а вся страница).
  *
- * P11-T3: подвал теперь несёт навигацию (DESIGN.md §3), которая зависит
- * от страницы — Base.astro прокидывает в Footer два новых пропса:
- * showHomeLink (везде true, кроме главной — незачем вести с главной на
- * главную) и nextWork (только со страницы кейса, для «Следующий проект»).
+ * P11-T3: подвал несёт навигацию «На главную» (DESIGN.md §3) — Base.astro
+ * прокидывает showHomeLink, везде true, кроме главной (незачем вести
+ * с главной на главную). Пропс nextWork убран 09.08.2026 вместе со
+ * «Следующий проект» в подвале — см. комментарий в Footer.astro.
  *
  * P11-T5: глобальный наблюдатель анимаций появления (DESIGN.md §4). Один
  * IntersectionObserver на всё дерево [data-reveal] — компонент сам решает,
@@ -33,7 +33,6 @@ import '../styles/reset.css';
 import '../styles/typography.css';
 import '../styles/layout.css';
 import '../styles/reveal.css';
-import type { CollectionEntry } from 'astro:content';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import BackToTop from '../components/BackToTop.astro';
@@ -43,11 +42,9 @@ interface Props {
 	title: string;
 	/** Ссылка «На главную» в подвале. По умолчанию true — снята только на самой главной. */
 	showHomeLink?: boolean;
-	/** Следующий кейс — только со страницы кейса, для ссылки «Следующий проект» в подвале. */
-	nextWork?: CollectionEntry<'works'>;
 }
 
-const { title, showHomeLink = true, nextWork } = Astro.props;
+const { title, showHomeLink = true } = Astro.props;
 // пути — через общий withBase (src/lib/url.ts)
 ---
 
@@ -77,7 +74,7 @@ const { title, showHomeLink = true, nextWork } = Astro.props;
 		<main>
 			<slot />
 		</main>
-		<Footer showHomeLink={showHomeLink} nextWork={nextWork} />
+		<Footer showHomeLink={showHomeLink} />
 		<BackToTop />
 		<script>
 			/*
