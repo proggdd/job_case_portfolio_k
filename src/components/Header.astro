@@ -11,19 +11,31 @@
  * Аватар остаётся слева: он и раньше стоял у края и обзору не мешал.
  *
  * ── Два состояния панели ─────────────────────────────────────────────────
- * Наверху страницы: три значка без подписей (ContactPills в режиме iconsOnly).
+ * Наверху страницы: три пилюли значок + подпись в ряд. Подписи вернули
+ * 09.08.2026 по следующей же правке заказчика после «только значки»:
+ * «сверху, где значки, должны быть и подписи, чтобы было понятно что и где».
+ *
  * Ниже первого экрана: панель сворачивается в кнопку «Контакты» со значком
  * чата, мельче и легче начертанием (--text-pill-compact-*). При наведении
- * или заходе с клавиатуры — снова разворачивается в три значка.
+ * или заходе с клавиатуры пилюли раскрываются ПОД кнопкой столбиком —
+ * прямая формулировка заказчика: «хочу видеть эти пилюли столбиком, чтобы
+ * можно было в дальнейшем просто докинуть снизу новую кнопку». Добавление
+ * четвёртого контакта в src/data/contacts.ts теперь ничего не ломает.
  *
- * Разворот наружу влево от правого края: обе капсулы прижаты к правому краю
- * (right: 0), поэтому растёт панель в сторону свободного места, а не за край
- * экрана.
+ * В каждом состоянии ровно один элемент лежит в потоке, второй — абсолютно.
+ * Это не стилевая мелочь: пока обе капсулы были абсолютными, обёртка
+ * .contact-panel схлопывалась в нулевую ширину, грид не резервировал под неё
+ * место, и панель наезжала на аватар слева — замечание заказчика «кнопка
+ * проезжает по нему с самого начала».
  *
- * Свёрнутая и развёрнутая капсулы обе остаются в DOM. Скрытая уводится
- * через opacity + pointer-events, а не display: none — иначе ссылки внутри
- * выпадали бы из порядка обхода табом, и панель нельзя было бы развернуть
- * с клавиатуры. :focus-within на обёртке раскрывает её при заходе табом.
+ * Скрытое состояние уводится через opacity + pointer-events, а не
+ * display: none — иначе ссылки внутри выпадали бы из порядка обхода табом,
+ * и панель нельзя было бы развернуть с клавиатуры. :focus-within на обёртке
+ * раскрывает её при заходе табом.
+ *
+ * Выпадающий столбик прижат к кнопке вплотную (top: 100%) намеренно: зазор
+ * между ними стал бы мёртвой зоной, курсор пересекал бы её и панель
+ * схлопывалась бы на полпути.
  *
  * is-compact вернулся после отмены 09.08 (тогда убирали укрупнение шапки на
  * первом экране). Смысл у класса теперь другой: не «уменьшить всё», а
@@ -44,7 +56,7 @@ import { withBase } from '../lib/url';
 
 		<div class="contact-panel">
 			<span class="contact-panel__toggle" aria-hidden="true">
-				<svg width="20" height="20" viewBox="0 0 24 24" focusable="false">
+				<svg class="contact-panel__toggle-icon" width="20" height="20" viewBox="0 0 24 24" focusable="false">
 					<path
 						d="M3 6.5A2 2 0 0 1 5 4.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2z"
 						fill="none"
@@ -57,7 +69,7 @@ import { withBase } from '../lib/url';
 			</span>
 
 			<div class="pill-group">
-				<ContactPills iconsOnly />
+				<ContactPills withIcons />
 			</div>
 		</div>
 
@@ -159,12 +171,24 @@ import { withBase } from '../lib/url';
 		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
 	}
 
-	/* Окантовка аватара: тонкое кольцо вокруг круга. */
+	/* Окантовка аватара: тонкое кольцо вокруг круга.
+	   Сдвиг влево на половину поля контейнера — правка 09.08.2026 по просьбе
+	   «аватар стоит подвинуть чуть влево». Взята половина уже существующего
+	   --space-content-padding, новое значение не заводилось. */
 	.avatar-glass {
 		justify-self: start;
+		margin-left: calc(var(--space-content-padding) / -2);
 		padding: 6px;
 		border-radius: 50%;
 		line-height: 0;
+	}
+
+	@media (max-width: 1023px) {
+		.avatar-glass {
+			/* На планшете и мобильном поле контейнера меньше (32 и 20px),
+			   вынос за край съел бы аватар — сдвиг снимается. */
+			margin-left: 0;
+		}
 	}
 
 	/* Правка 09.08.2026: здесь стояла пустая заглушка --color-surface (серый
@@ -182,24 +206,22 @@ import { withBase } from '../lib/url';
 		background-color: var(--color-surface); /* фон под загрузку файла */
 	}
 
-	/* Обёртка двух состояний. Высота задана явно, чтобы строка шапки не
-	   дёргалась при переключении: обе капсулы одной высоты. */
+	/* Обёртка двух состояний. Ширину ей задаёт тот элемент, который в текущем
+	   состоянии лежит в потоке, — благодаря этому грид резервирует под панель
+	   место и она не наезжает на аватар. */
 	.contact-panel {
 		position: relative;
 		justify-self: end;
-		height: 52px;
+		display: flex;
+		align-items: center;
+		min-height: 52px;
 	}
 
 	.pill-group,
 	.contact-panel__toggle {
-		position: absolute;
-		top: 0;
-		right: 0; /* обе капсулы прижаты к правому краю — панель растёт влево, в пустое поле */
 		height: 52px;
 		border-radius: var(--radius-pill-group); /* DESIGN.md §2: 24px */
-		transition:
-			opacity 300ms ease-out,
-			transform 300ms ease-out; /* DESIGN.md §4: 300 мс ease-out */
+		transition: opacity 300ms ease-out; /* DESIGN.md §4: 300 мс ease-out */
 	}
 
 	.pill-group {
@@ -212,6 +234,7 @@ import { withBase } from '../lib/url';
 	.contact-panel__toggle {
 		display: inline-flex;
 		align-items: center;
+		justify-content: center;
 		gap: calc(var(--space-unit) * 2);
 		padding-inline: calc(var(--space-unit) * 5);
 		font-family: var(--font-body);
@@ -221,39 +244,63 @@ import { withBase } from '../lib/url';
 		white-space: nowrap;
 	}
 
-	/* Наверху страницы: видны три значка, свёрнутая кнопка спрятана. */
+	/* Без этого значок схлопывается в нулевую ширину: reset.css даёт всем svg
+	   display: block, и как флекс-элемент он сжимаем. Именно так 09.08.2026
+	   «пропал» значок чата (замер на живом сайте: 0×20 при заданных 20×20),
+	   а подпись рядом уезжала влево от центра кнопки. */
+	.contact-panel__toggle-icon {
+		flex-shrink: 0;
+	}
+
+	/* Наверху страницы: пилюли в ряд и в потоке, свёрнутая кнопка спрятана. */
 	.contact-panel__toggle {
+		position: absolute;
+		top: 0;
+		right: 0;
 		opacity: 0;
 		pointer-events: none;
 	}
 
-	/* Ниже первого экрана: панель свёрнута в кнопку. Значки уводятся
-	   прозрачностью, а не display: none — иначе ссылки выпали бы из обхода
-	   табом и панель нельзя было бы раскрыть с клавиатуры. */
+	/* Ниже первого экрана: в потоке кнопка, пилюли уходят под неё столбиком.
+	   top: 100% вплотную — зазор стал бы мёртвой зоной, курсор пересекал бы
+	   её по пути к пилюлям и панель схлопывалась бы на полпути. */
 	.site-header.is-compact .contact-panel__toggle {
+		position: static;
 		opacity: 1;
 		pointer-events: auto;
 	}
 
 	.site-header.is-compact .pill-group {
+		position: absolute;
+		top: 100%;
+		right: 0;
+		height: auto;
+		flex-direction: column;
+		align-items: stretch;
+		padding: calc(var(--space-unit) * 3);
 		opacity: 0;
 		pointer-events: none;
-		transform: scale(0.96);
-		transform-origin: right center;
 	}
 
-	/* Наведение или заход с клавиатуры на свёрнутую панель — снова три значка. */
+	/* Список внутри ContactPills — чужая область видимости, отсюда :global.
+	   Столбик задаётся здесь, а не в самом компоненте: там он используется
+	   ещё подвалом и страницей контактов, где раскладка строкой. */
+	.site-header.is-compact .pill-group :global(.contact-pills) {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.site-header.is-compact .pill-group :global(.contact-pill) {
+		justify-content: flex-start; /* в столбике значки должны стоять по одной вертикали */
+	}
+
+	/* Наведение или заход с клавиатуры на свёрнутую панель — столбик пилюль.
+	   Кнопка при этом остаётся видимой: она якорь, к которому примыкает
+	   столбик, и без неё курсор терял бы цель наведения. */
 	.site-header.is-compact .contact-panel:hover .pill-group,
 	.site-header.is-compact .contact-panel:focus-within .pill-group {
 		opacity: 1;
 		pointer-events: auto;
-		transform: scale(1);
-	}
-
-	.site-header.is-compact .contact-panel:hover .contact-panel__toggle,
-	.site-header.is-compact .contact-panel:focus-within .contact-panel__toggle {
-		opacity: 0;
-		pointer-events: none;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

@@ -9,18 +9,14 @@
  * сейчас единственные ссылки в макете. Здесь только то, что не покрыто
  * глобальным стилем: форма пилюли и фон.
  *
- * ── Режим iconsOnly, добавлен 09.08.2026 ─────────────────────────────────
- * По решению заказчика шапка показывает только значки, без подписей:
- * «наверху страницы было видно 3 значка, без подписи». Подпись при этом
- * не исчезает из разметки, а уходит в visually-hidden — скринридер и
- * клавиатура продолжают получать нормальные названия ссылок.
+ * ── Режим withIcons ──────────────────────────────────────────────────────
+ * Значок слева от подписи. Включает шапка.
  *
- * Это не повтор ошибки 05.08. Тогда иконки-без-подписей ставили на МОБИЛЬНОМ
- * как единственный вариант, и пользователь справедливо возразил: «на мобильном
- * не видно ни одного слова, только три стрелки». Сейчас режим включается
- * только в шапке на десктопе, где рядом есть и подписи в подвале, и страница
- * /contacts; на мобильном шапка по-прежнему показывает кнопку «Контакты»
- * словом (Header.astro).
+ * История: 09.08.2026 сначала сделали режим «только значки, без подписей»
+ * по прямой просьбе заказчика, в тот же день отменили по следующей —
+ * «сверху, где значки, должны быть и подписи, чтобы было понятно что и где».
+ * Подписи вернулись, значки остались. Класс-модификатор оставлен: он теперь
+ * управляет наличием значка, а не скрытием текста.
  *
  * Значки нарисованы здесь же, а не подключены библиотекой (DESIGN.md §1:
  * без сторонних зависимостей). Все три в одной сетке 24×24 с обводкой 1.75
@@ -35,11 +31,11 @@
 import { contacts, type ContactIcon } from '../data/contacts.ts';
 
 interface Props {
-	/** Только значки, подписи — в visually-hidden. Используется шапкой. */
-	iconsOnly?: boolean;
+	/** Рисовать значок слева от подписи. Используется шапкой. */
+	withIcons?: boolean;
 }
 
-const { iconsOnly = false } = Astro.props;
+const { withIcons = false } = Astro.props;
 
 /* Пути значков — 24×24, обводка задаётся в разметке ниже. */
 const iconPaths: Record<ContactIcon, string[]> = {
@@ -49,7 +45,7 @@ const iconPaths: Record<ContactIcon, string[]> = {
 };
 ---
 
-<ul class:list={['contact-pills', iconsOnly && 'contact-pills--icons']}>
+<ul class:list={['contact-pills', withIcons && 'contact-pills--icons']}>
 	{contacts.map((contact) => (
 		<li class="contact-pills__item">
 			<a
@@ -58,7 +54,7 @@ const iconPaths: Record<ContactIcon, string[]> = {
 				target={contact.external ? '_blank' : undefined}
 				rel={contact.external ? 'noopener noreferrer' : undefined}
 			>
-				{iconsOnly && (
+				{withIcons && (
 					<svg
 						class="contact-pill__icon"
 						width="22"
@@ -79,7 +75,7 @@ const iconPaths: Record<ContactIcon, string[]> = {
 						))}
 					</svg>
 				)}
-				<span class:list={['contact-pill__label', iconsOnly && 'visually-hidden']}>{contact.label}</span>
+				<span class="contact-pill__label">{contact.label}</span>
 				{contact.external && <span class="visually-hidden">(откроется в новом окне)</span>}
 			</a>
 		</li>
@@ -110,18 +106,17 @@ const iconPaths: Record<ContactIcon, string[]> = {
 		background-color: var(--color-pill-bg);
 	}
 
-	/* Режим значков: пилюля становится квадратной по высоте — подписи нет,
-	   и горизонтальный отступ, рассчитанный на текст, сделал бы её вытянутой. */
-	.contact-pills--icons .contact-pill {
-		width: 44px;
-		padding-inline: 0;
-	}
 
 	.contact-pill:focus-visible {
 		outline: 2px solid var(--color-text);
 		outline-offset: 2px;
 	}
 
+	/* flex-shrink: 0 обязателен. reset.css даёт всем svg display: block,
+	   и как флекс-элемент значок сжимается до нулевой ширины — именно так
+	   09.08.2026 «пропал» значок чата в кнопке «Контакты» шапки (замер
+	   на живом сайте: 0×20 при заданных 20×20), а текст рядом уезжал влево
+	   от центра на половину незанятого зазора. */
 	.contact-pill__icon {
 		flex-shrink: 0;
 	}
