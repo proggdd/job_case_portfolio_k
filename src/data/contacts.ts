@@ -19,7 +19,8 @@ export interface Contact {
 }
 
 export const contacts: Contact[] = [
-  { label: 'Телеграм', href: '#', external: true, icon: 'telegram' },
+  // Реальный адрес получен от заказчика 09.08.2026, часть K-2 закрыта.
+  { label: 'Телеграм', href: 'https://t.me/kirillador_xx', external: true, icon: 'telegram' },
   { label: 'Email', href: '#', external: true, icon: 'email' },
   { label: 'Резюме', href: '#', external: true, icon: 'resume' },
 ];

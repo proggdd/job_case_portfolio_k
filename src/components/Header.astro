@@ -26,6 +26,7 @@
 import { contacts } from '../data/contacts.ts';
 import { withBase } from '../lib/url';
 
+const telegram = contacts.find((contact) => contact.icon === 'telegram');
 const resume = contacts.find((contact) => contact.icon === 'resume');
 ---
 
@@ -36,16 +37,16 @@ const resume = contacts.find((contact) => contact.icon === 'resume');
 		</div>
 
 		<nav class="site-header__actions" aria-label="Связаться">
-			<a class="header-button" href={withBase('contacts/')}>Контакты</a>
+			{telegram && (
+				<a class="header-button header-button--primary" href={telegram.href} target="_blank" rel="noopener noreferrer">
+					Контакты
+					<span class="visually-hidden">, Телеграм (откроется в новом окне)</span>
+				</a>
+			)}
 			{resume && (
-				<a
-					class="header-button"
-					href={resume.href}
-					target={resume.external ? '_blank' : undefined}
-					rel={resume.external ? 'noopener noreferrer' : undefined}
-				>
+				<a class="header-button" href={resume.href} target="_blank" rel="noopener noreferrer">
 					Резюме
-					{resume.external && <span class="visually-hidden">(откроется в новом окне)</span>}
+					<span class="visually-hidden">(откроется в новом окне)</span>
 				</a>
 			)}
 		</nav>
@@ -129,9 +130,27 @@ const resume = contacts.find((contact) => contact.icon === 'resume');
 		white-space: nowrap;
 	}
 
+	/* «Контакты» — основное действие, поэтому сплошная заливка вместо стекла.
+	   Решение заказчика 09.08.2026: «кнопка контакты должна быть чёрная
+	   и вести ссылкой в тг». Цвета — существующие токены: текст страницы
+	   становится фоном кнопки, фон страницы — её текстом. Новых значений нет.
+	   Стеклянные свойства перебиваются здесь же, иначе они остались бы
+	   от общего правила капсул выше. */
+	.header-button--primary {
+		background-color: var(--color-text);
+		border-color: var(--color-text);
+		color: var(--color-bg);
+		backdrop-filter: none;
+	}
+
 	.header-button:hover,
 	.header-button:focus-visible {
 		text-decoration: none; /* отменяет глобальное подчёркивание ссылок из typography.css */
+	}
+
+	.header-button--primary:focus-visible {
+		outline-color: var(--color-text);
+		outline-offset: 3px; /* обводка не должна сливаться с чёрной заливкой */
 	}
 
 	.header-button:focus-visible {

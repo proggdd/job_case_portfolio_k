@@ -22,6 +22,15 @@
  * в референсе его нет, а дисциплина первого экрана ограничивает состав
  * четырьмя текстовыми элементами. Решение обратимое, ждёт заказчика.
  *
+ * ── Появление при прокрутке отключено 09.08.2026 ──────────────────────────
+ * С блока сняты все data-reveal. Причина: наблюдатель появления срабатывает
+ * с rootMargin -20% снизу, и нижняя строка «3 года опыта • B2B, B2C»
+ * оставалась невидимой, пока страницу не тронешь — заказчик: «строчка не
+ * должна выезжать после прокрутки, сразу при заходе должны быть видны
+ * 3 строки». Первый экран виден целиком с самого начала, анимировать
+ * появление того, что и так перед глазами, смысла нет. В ленте кейсов
+ * data-reveal остаётся: там блоки действительно приходят из-за края.
+ *
  * Видео-аватар: механика прежняя, поворот головы по прогрессу прокрутки
  * первого экрана, при prefers-reduced-motion остаётся статичный постер.
  */
@@ -32,7 +41,7 @@ const video = withBase('media/avatar/head.mp4');
 ---
 
 <section class="hero">
-	<div class="hero__media" data-hero-media data-reveal style="--reveal-delay: 0ms">
+	<div class="hero__media" data-hero-media>
 		<img class="hero__poster" src={poster} alt="Кирилл Колобанов" width="1240" height="1240" />
 		<video
 			class="hero__video"
@@ -45,9 +54,9 @@ const video = withBase('media/avatar/head.mp4');
 			tabindex="-1"></video>
 	</div>
 
-	<p class="hero__role" data-reveal style="--reveal-delay: 90ms">UX/UI дизайнер</p>
-	<h1 class="hero__name" data-reveal style="--reveal-delay: 180ms">Кирилл Колобанов</h1>
-	<p class="hero__meta" data-reveal style="--reveal-delay: 270ms">3 года опыта • B2B, B2C</p>
+	<p class="hero__role">UX/UI дизайнер</p>
+	<h1 class="hero__name">Кирилл Колобанов</h1>
+	<p class="hero__meta">3 года опыта • B2B, B2C</p>
 </section>
 
 <style>
@@ -73,12 +82,20 @@ const video = withBase('media/avatar/head.mp4');
 		background-color: var(--color-bg);
 	}
 
+	/* Фон на самих кадрах, а не только на обёртке — правка 09.08.2026 по
+	   замечанию «чёрные полосы справа и снизу у аватара». В файлах полос нет
+	   (замер краёв: 254–255 из 255, видео 1240×1240 при SAR 1:1). Полосы
+	   давал сам <video>: сторона блока получается дробной (62.7svh), кадр
+	   ложится на неё с округлением, и по правому и нижнему краю проступала
+	   подложка элемента, которую браузер красит чёрным. Белый фон под кадром
+	   закрывает этот субпиксельный зазор. */
 	.hero__poster,
 	.hero__video {
 		display: block;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		background-color: var(--color-bg);
 	}
 
 	.hero__video {
