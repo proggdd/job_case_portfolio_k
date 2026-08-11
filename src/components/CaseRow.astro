@@ -154,7 +154,10 @@ const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 		background-color: var(--color-red);
 		color: var(--color-bg);
 		box-shadow: var(--shadow-button-solid);
-		transition: background-color 150ms ease-out;
+		/* B4 (PLAN-PATCH-2026-08-11.md), тот же диагноз и то же лекарство,
+		   что у .header-button (Header.astro): асимметричный тайминг —
+		   мгновенный вход в нажатие, 180мс ease на возврат. */
+		transition: background-color 180ms ease;
 	}
 
 	.case-row__link:hover .case-row__cta {
@@ -163,6 +166,13 @@ const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 
 	.case-row__link:active .case-row__cta {
 		background-color: var(--color-red-active);
+		transition-duration: 0ms;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.case-row__cta {
+			transition-duration: 0ms;
+		}
 	}
 
 	.case-row__cta-icon {

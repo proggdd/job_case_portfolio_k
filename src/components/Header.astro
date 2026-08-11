@@ -217,7 +217,32 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		font-weight: var(--text-button-weight); /* 600 — план А4: типографика кнопок из героя, не из фреймов состояний */
 		line-height: 1;
 		white-space: nowrap;
-		transition: background-color 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out;
+		/*
+		 * B4: смена цвета при нажатии не читалась. Диагноз обратный
+		 * формулировке заказчика («слишком быстро меняется») — переход был
+		 * симметричным 150мс, а :active живёт 80-120мс при обычном клике:
+		 * анимация не успевала доехать до тёмного цвета и разворачивалась
+		 * обратно, поэтому нажатие не читалось вообще.
+		 *
+		 * Асимметричный тайминг лечит это: вход в нажатие ниже мгновенный
+		 * (transition-duration: 0ms на :active), возврат — эта строка,
+		 * 180мс. ease, не ease-out: это смена цвета в покое/наведении,
+		 * а не появление/исчезновение элемента (skill `animate`, таблица
+		 * кривых). 180мс — внутри диапазона «кнопка, обратная связь»
+		 * (100-160мс) и общего потолка UI-переходов (300мс), проверено
+		 * живым кликом на превью.
+		 */
+		transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+	}
+
+	.header-button:active {
+		transition-duration: 0ms; /* мгновенный вход в нажатие — само нажатие остаётся видимым при любой длительности клика */
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.header-button {
+			transition-duration: 0ms;
+		}
 	}
 
 	/* «Резюме» — вторичная, с обводкой. План Т4, узел 381:14420.
