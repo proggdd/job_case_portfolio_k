@@ -1,7 +1,7 @@
 ---
 title: "Аренда автомобилей IQ AUTO"
 year: 2025
-summary: "Заглушка подзаголовка — реальный текст появится в Ф6 (P6-T2)."
+summary: "Перевёл ручное оформление аренды из Telegram и звонков в единое приложение."
 role: "Заглушка роли"
 segment: B2C
 poster: media/iq-auto/cover.webp
