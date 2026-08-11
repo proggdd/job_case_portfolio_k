@@ -208,7 +208,16 @@ const video = withBase('media/avatar/head.mp4');
 		visibility: hidden;
 	}
 
+	/*
+	 * C1 (PLAN-C-HERO-FONTS-2026-08-11.md). .hero__media стоит на
+	 * position: relative, у текстовых строк позиционирования не было —
+	 * позиционированный элемент рисуется поверх непозиционированного,
+	 * белый квадрат медиа кроет верх букв имени. Даём строкам свой
+	 * положительный слой.
+	 */
 	.hero__name {
+		position: relative;
+		z-index: 1;
 		/* -8px: имя заходит на прозрачный низ постера (план, раздел 2) */
 		margin-top: var(--space-hero-avatar-to-name);
 		font-family: var(--font-body); /* Inter, как в коде макета */
@@ -220,6 +229,8 @@ const video = withBase('media/avatar/head.mp4');
 	}
 
 	.hero__meta {
+		position: relative;
+		z-index: 1;
 		margin-top: var(--space-hero-name-to-meta);
 		max-width: none;
 		font-family: var(--font-body);
