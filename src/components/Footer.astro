@@ -13,20 +13,49 @@
  * незачем. Контактов внизу больше нет — спрятанная шапка оставила бы
  * пользователя в самом низу страницы вообще без способа связаться.
  *
- * ── Ветка hero-ref-2026-08-09 ────────────────────────────────────────────
- * Ссылка «На главную» убрана из подвала на всех страницах по решению
- * заказчика: «кнопку на главную убрать из подвала везде, оставить липучку».
- * Возврат на главную остаётся плавающей кнопкой в левом нижнем углу
- * (FloatingControls.astro) — она видна на любой высоте прокрутки, а не
- * только внизу страницы. Проп showHomeLink компонент больше не принимает.
+ * ── Ссылка «На главную»: вернулась 11.08.2026 ────────────────────────────
+ * 09.08 её убрали отсюда по решению заказчика («кнопку на главную убрать
+ * из подвала везде, оставить липучку») и увели в плавающие кнопки.
+ * 11.08 Даниил вернул обратно: «клавишу на главную запихать в подвал».
+ * Это осознанный откат, а не потеря — не убирать снова, не разобравшись.
+ *
+ * Плавающей осталась только «Наверх» (FloatingControls.astro), проп
+ * showHomeLink переехал сюда.
+ *
+ * Оформление — вторичная кнопка шапки («Резюме»), тот же вид, что теперь
+ * и у «Наверх»: на сайте два вида кнопок, сплошная красная и обводка,
+ * третьего не заводим.
  *
  * Высота 64px из DESIGN.md была рассчитана на подвал-с-контактами; строка
  * с текстом в неё укладывается, поэтому min-height с тем же числом сохранён.
  */
+import { withBase } from '../lib/url';
+
+interface Props {
+	/** Показывать «На главную». Снята только на самой главной. */
+	showHomeLink?: boolean;
+}
+
+const { showHomeLink = true } = Astro.props;
 ---
 
 <footer class="site-footer" data-footer>
 	<div class="site-footer__inner container">
+		{showHomeLink && (
+			<a class="site-footer__home" href={withBase('')}>
+				<svg class="site-footer__home-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<path
+						d="M20 12H4M4 12l6.5-6.5M4 12l6.5 6.5"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.75"
+						stroke-linecap="round"
+						stroke-linejoin="round"></path>
+				</svg>
+				На главную
+			</a>
+		)}
+
 		{/*
 		  ⚠️ ЧЕРНОВИК ТЕКСТА, ждёт утверждения Кирилла (карточка K-8).
 		  Написан про подход к работе, а не про конкретные проекты: подвал
@@ -66,6 +95,73 @@
 		color: var(--color-text-muted);
 	}
 
+	/*
+	 * «На главную» — оформление вторичной кнопки шапки («Резюме»), правка
+	 * 11.08.2026. Те же токены, что у .header-button--outline: высота
+	 * элемента управления, полная капсула, обводка внутренней тенью
+	 * (не border — он съел бы высоту при box-sizing: border-box).
+	 */
+	.site-footer__home {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: calc(var(--space-unit) * 2);
+		flex-shrink: 0;
+		height: var(--size-header-control);
+		padding-inline: var(--space-header-button-padding);
+		border-radius: var(--radius-pill-full);
+		font-family: var(--font-body);
+		font-size: var(--text-header-button-size);
+		font-weight: var(--text-button-weight);
+		white-space: nowrap;
+		background-color: transparent;
+		color: var(--color-text);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-outline);
+		transition:
+			background-color 180ms ease-out,
+			color 180ms ease-out,
+			box-shadow 180ms ease-out;
+	}
+
+	.site-footer__home:hover {
+		text-decoration: none; /* отменяет глобальное подчёркивание ссылок */
+		background-color: var(--color-text);
+		color: var(--color-bg);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-solid);
+	}
+
+	/* Вход в нажатие мгновенный — тот же приём, что у кнопок шапки (B4). */
+	.site-footer__home:active {
+		background-color: var(--color-button-outline-active);
+		color: var(--color-bg);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-outline);
+		transition-duration: 0ms;
+	}
+
+	.site-footer__home:focus-visible {
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
+		outline-offset: 2px;
+		text-decoration: none;
+	}
+
+	/* reset.css даёт svg display: block, и как флекс-элемент он сжимается
+	   до нулевой ширины — тот же капкан, что у иконок в шапке. */
+	.site-footer__home-icon {
+		flex-shrink: 0;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.site-footer__home {
+			transition: none;
+		}
+	}
+
 	@media (min-width: 600px) {
 		.site-footer__inner {
 			flex-direction: row;
@@ -76,8 +172,9 @@
 
 		/* Без ссылки «На главную» (на самой главной) строка-итог остаётся
 		   у правого края, а не уезжает влево — та же ось, что у панели
-		   контактов в шапке. */
-		.site-footer__note {
+		   контактов в шапке. Со ссылкой правило не действует: space-between
+		   сам разводит их по краям. */
+		.site-footer__note:only-child {
 			margin-left: auto;
 		}
 	}

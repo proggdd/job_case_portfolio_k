@@ -88,8 +88,8 @@ const { title, showHomeLink = true } = Astro.props;
 		<main>
 			<slot />
 		</main>
-		<Footer />
-		<FloatingControls showHomeLink={showHomeLink} />
+		<Footer showHomeLink={showHomeLink} />
+		<FloatingControls />
 		<script>
 			/*
 			 * P11-T5: появление блоков при скролле. Один общий наблюдатель на все

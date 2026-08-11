@@ -1,51 +1,33 @@
 ---
 /*
- * Плавающие кнопки нижнего ряда: «На главную» слева, «Наверх» справа.
+ * Плавающая кнопка «Наверх» в правом нижнем углу.
  *
- * Один компонент на обе, а не два независимых — прямое требование заказчика
- * «кнопку на главную надо сделать на том же уровне что и стрелочку наверх».
- * Общий нижний отступ и общий подъём над подвалом здесь заданы один раз,
- * поэтому уровень не разъедется при следующей правке.
+ * ── Правка 11.08.2026 ────────────────────────────────────────────────────
+ * Две изменения по решению Даниила:
  *
- * До 09.08.2026 «На главную» жила сначала внутри страницы кейса (её обрезала
- * плавающая шапка), потом в самой шапке слева. Оба варианта заказчик отклонил.
+ * 1. «На главную» переехала в подвал (Footer.astro) и отсюда убрана —
+ *    вместе с пропом showHomeLink, компонент больше ничего не принимает.
+ *    История у этой ссылки длинная: она жила внутри страницы кейса, потом
+ *    в шапке слева, потом в подвале, потом здесь. Возврат в подвал —
+ *    осознанный откат к варианту 09.08, а не потеря.
  *
- * Подъём над подвалом: высота подвала разная по страницам (104px на главной,
- * 125px там, где есть ссылка), статическим отступом не покрыть — читаем
- * фактическую высоту в момент появления подвала.
+ * 2. Кнопка оформлена как вторичная кнопка шапки («Резюме»): обводка
+ *    в 1.5px, полная капсула, те же высота, отклик и тень. Было матовое
+ *    стекло (--glass-*) — своя, четвёртая по счёту форма кнопки на сайте.
+ *    Теперь на всех кнопках сайта два вида: сплошная красная и обводка.
+ *
+ * Подъём над подвалом: высота подвала разная по страницам, статическим
+ * отступом не покрыть — читаем фактическую высоту в момент его появления.
  *
  * Наблюдатель за подвалом получает rootMargin снизу: подъём начинается
- * ДО того, как подвал въедет в экран. Без этого кнопки успевали наехать
- * на серую полосу и только потом поднимались — замечание заказчика
+ * ДО того, как подвал въедет в экран. Без этого кнопка успевала наехать
+ * на серую полосу и только потом поднималась — замечание заказчика
  * «сначала наезжают на фон подвала и потом медленно поднимаются».
  * Длительность подъёма отдельная и короткая по той же причине.
  */
-import { withBase } from '../lib/url';
-
-interface Props {
-	/** Показывать «На главную». Снята только на самой главной. */
-	showHomeLink?: boolean;
-}
-
-const { showHomeLink = true } = Astro.props;
 ---
 
 <div class="floating-controls" data-floating-controls>
-	{showHomeLink && (
-		<a class="floating-button floating-controls__home" href={withBase('')}>
-			<svg class="floating-button__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-				<path
-					d="M20 12H4M4 12l6.5-6.5M4 12l6.5 6.5"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="1.75"
-					stroke-linecap="round"
-					stroke-linejoin="round"></path>
-			</svg>
-			<span class="floating-button__label">На главную</span>
-		</a>
-	)}
-
 	<button class="floating-button floating-controls__top" data-back-to-top type="button" aria-label="Наверх">
 		<svg class="floating-button__icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
 			<path
@@ -131,38 +113,65 @@ const { showHomeLink = true } = Astro.props;
 		bottom: calc(var(--floating-lift, 0px) + var(--space-content-padding));
 	}
 
-	/* Правая кнопка прижата к правому краю и когда левой нет (на главной). */
+	/* Кнопка одна и прижата к правому краю. */
 	.floating-controls__top {
 		margin-left: auto;
 	}
 
+	/*
+	 * Оформление вторичной кнопки шапки («Резюме»), правка 11.08.2026.
+	 * Те же токены, что у .header-button--outline в Header.astro: высота
+	 * элемента управления, полная капсула, обводка 1.5px внутренней тенью
+	 * (не border — он съел бы высоту при box-sizing: border-box), та же
+	 * тень и та же длительность отклика.
+	 */
 	.floating-button {
-		pointer-events: auto; /* сами кнопки кликабельны, в отличие от обёртки */
+		pointer-events: auto; /* сама кнопка кликабельна, в отличие от обёртки */
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		gap: calc(var(--space-unit) * 2);
-		height: 52px; /* высота капсул шапки */
-		padding-inline: calc(var(--space-unit) * 5);
-		border-radius: var(--radius-pill-group);
+		height: var(--size-header-control);
+		width: var(--size-header-control); /* квадрат: внутри только стрелка */
+		border-radius: var(--radius-pill-full);
 		font-family: var(--font-body);
-		font-size: var(--text-pill-compact-size);
-		font-weight: var(--text-pill-compact-weight);
+		font-size: var(--text-header-button-size);
+		font-weight: var(--text-button-weight);
+		/* .floating-controls__top — нативный <button>: reset.css обнуляет
+		   у button только font/color, не border. У Chrome и Firefox
+		   дефолтная рамка кнопки рисуется style: outset — это подсветка
+		   с одной стороны и затемнение с другой на одном border-color,
+		   отсюда серая половина кольца поверх нашей box-shadow-обводки.
+		   appearance: none убирает и системный фон/паддинг заодно. */
+		appearance: none;
+		border: none;
+		background-color: transparent;
 		color: var(--color-text);
-
-		/* Матовое стекло — те же токены, что у капсул шапки, DESIGN.md §4.
-		   Без -webkit-префикса: минификатор схлопывает пару объявлений
-		   и оставляет префиксную строку, которую Chrome уже не понимает
-		   (история коммита 1778c4d). */
-		background-color: var(--glass-bg);
-		border: 1px solid var(--glass-border);
-		box-shadow: var(--glass-shadow);
-		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-outline);
+		transition:
+			background-color 180ms ease-out,
+			color 180ms ease-out,
+			box-shadow 180ms ease-out;
 	}
 
-	.floating-controls__top {
-		width: 52px;
-		padding-inline: 0;
+	.floating-button:hover {
+		background-color: var(--color-text);
+		color: var(--color-bg);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-solid);
+	}
+
+	/* Вход в нажатие мгновенный: состояние живёт 80–120 мс при обычном
+	   клике и на плавном переходе не успевало бы стать видимым (B4). */
+	.floating-button:active {
+		background-color: var(--color-button-outline-active);
+		color: var(--color-bg);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-outline);
+		transition-duration: 0ms;
 	}
 
 	.floating-button:hover,
@@ -188,29 +197,11 @@ const { showHomeLink = true } = Astro.props;
 			right: 20px;
 			bottom: 20px;
 		}
-
-		/* Подпись убирается, остаётся стрелка: на 375px две подписи
-		   в ряд с кнопкой «Наверх» не помещаются. */
-		.floating-button__label {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			padding: 0;
-			margin: -1px;
-			overflow: hidden;
-			clip: rect(0, 0, 0, 0);
-			white-space: nowrap;
-			border: 0;
-		}
-
-		.floating-controls__home {
-			width: 52px;
-			padding-inline: 0;
-		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.floating-controls {
+		.floating-controls,
+		.floating-button {
 			transition: none; /* DESIGN.md §4: состояния переключаются мгновенно */
 		}
 	}
