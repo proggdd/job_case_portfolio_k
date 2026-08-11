@@ -82,7 +82,7 @@ const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIn
 <Base title={`${title} — Кирилл Колобанов`}>
 	<article class="container">
 		<div class="case-page case-block-width">
-			<div class="case-page__hero" data-snap>
+			<div class="case-page__hero">
 				<header class="case-page__header" data-reveal>
 					<h1 class="case-page__title">{title}</h1>
 					<dl class="case-page__meta">
@@ -161,11 +161,9 @@ const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIn
 	 * position: relative на обёртке нужен, чтобы position: absolute у ссылки
 	 * (ниже) считался от неё, а не от предка выше по дереву.
 	 *
-	 * data-snap — тот же приём, что у карточек кейсов на главной
-	 * (CaseRow.astro): доводчик в Base.astro мягко подтягивает страницу
-	 * к границе блока. Дальше по странице (текст кейса, галерея, навигация)
-	 * этой пометки нет: там читают связный текст, и подтягивание мешало бы
-	 * читать, а не помогало бы ориентироваться, как в ленте карточек.
+	 * data-snap здесь был тем же приёмом, что у карточек кейсов на главной —
+	 * доводчик убран целиком по просьбе заказчика (PLAN-PATCH-2026-08-11.md,
+	 * B3), атрибут снят.
 	 */
 	/* Ссылка «На главную» отсюда убрана 09.08.2026: её обрезала плавающая
 	   шапка и по ней нельзя было попасть. Теперь это стеклянная кнопка
