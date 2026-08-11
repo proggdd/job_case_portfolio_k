@@ -1,21 +1,26 @@
 ---
 /*
  * CaseRow — DESIGN.md §3 «Компоненты» + «Блоки главной» №3 + карточка P5-T2.
+ * Раскладка переписана 11.08.2026 по плану PLAN-FIGMA-HERO-CASE-2026-08-11.md,
+ * задача Т5, раздел 2 «Блок кейса» (узел 381:14548). Применяется к обеим
+ * карточкам ленты (подтверждено архитектором: «это CaseRow целиком»).
  *
- * Весь блок кейса — ОДНА ссылка на /works/<slug>: кликабельны и заголовок,
- * и медиа (карточка P5-T2 «Важное по содержанию»). Здесь ровно один <a>,
- * оборачивающий всё содержимое строки — не три вложенные ссылки.
+ * Весь блок кейса — ОДНА ссылка на /works/<slug>: кликабельны заголовок,
+ * подзаголовок, кнопка-приманка и медиа. Здесь ровно один <a>, оборачивающий
+ * всё содержимое строки. Кнопка «Подробнее о проекте» — не второй <a> (это
+ * сделало бы вложенную ссылку, невалидный HTML), а <span>: визуально кнопка,
+ * фактически часть текста единственной ссылки блока.
  *
- * Год не оформлен как <h4>: сопоставление ролей с тегами H1–H6 в
- * typography.css было временным для проверки шкалы на тестовой странице Ф4
- * (см. комментарий там же) — реальную семантику задают компоненты Ф5.
- * Год — метаданные при заголовке, а не отдельный подраздел, поэтому это
- * <span> со стилем токена --text-year-*, а не заголовок. Заголовок кейса —
- * <h3> (после будущих H1/H2 героя иерархия не прерывается). Подзаголовок —
- * <p>, обычный текст под заголовком, не отдельный уровень заголовков.
+ * Год убран из блока (план, раздел 2: в таблице дельты строки «год» нет;
+ * подтверждено архитектором — кнопка заняла его прежнее место в правом
+ * верхнем углу). Токен --text-year-* остаётся в tokens.css: используется
+ * на странице кейса (case-page__meta), туда план не заходит.
  *
- * DESIGN.md §5 «Мобильный»: «год переносится под заголовок» — реализовано
- * mobile-first в <style>: колонка по умолчанию, строка с 600px.
+ * Заголовок кейса — <h3> (после будущих H1/H2 героя иерархия не
+ * прерывается). Подзаголовок — <p>. Кнопка размечена как обычный текст
+ * внутри ссылки, не как интерактивный элемент: у неё нет отдельного фокуса,
+ * весь фокус остаётся на .case-row__link — так же, как было с текстом
+ * года раньше.
  *
  * P11-T5: data-reveal на <li> целиком — «каждый кейс» в перечне DESIGN.md
  * §4 считается одним блоком, а не набором из заголовка/подзаголовка/медиа
@@ -35,17 +40,23 @@ interface Props {
 }
 
 const { work, eager = false } = Astro.props;
-const { title, year, summary, video, poster } = work.data;
+const { title, summary, video, poster } = work.data;
 const href = withBase(`works/${work.id}/`);
+const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 ---
 
 <li class="case-row" data-reveal data-snap>
 	<a class="case-row__link case-block-width" href={href}>
 		<div class="case-row__header">
-			<h3 class="case-row__title">{title}</h3>
-			<span class="case-row__year">{year}</span>
+			<div class="case-row__text">
+				<h3 class="case-row__title">{title}</h3>
+				<p class="case-row__subtitle">{summary}</p>
+			</div>
+			<span class="case-row__cta">
+				Подробнее о проекте
+				<img class="case-row__cta-icon" src={arrowIcon} alt="" width="24" height="24" />
+			</span>
 		</div>
-		<p class="case-row__subtitle">{summary}</p>
 		<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager={eager} />
 	</a>
 </li>
@@ -80,17 +91,31 @@ const href = withBase(`works/${work.id}/`);
 		border-radius: var(--radius-media);
 	}
 
+	/* Колонка по умолчанию, строка с 600px — та же точка, что была у пары
+	   «заголовок/год», план мобильную раскладку кнопки не описывает
+	   (блокер Б-2 плана), новый брейкпоинт не заводился. */
 	.case-row__header {
 		display: flex;
-		flex-direction: column; /* мобильный, DESIGN.md §5: год переносится под заголовок */
+		flex-direction: column;
 		align-items: flex-start;
+		gap: calc(var(--space-unit) * 4); /* не задано планом — инженерный дефолт на базовой единице, как и раньше */
+	}
+
+	.case-row__text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-case-row-title-to-subtitle);
+		min-width: 0; /* заголовок и подзаголовок сжимаются раньше кнопки */
 	}
 
 	.case-row__title {
 		font-family: var(--font-display);
 		font-size: var(--text-case-title-size);
 		line-height: var(--text-case-title-line-height);
-		font-weight: var(--text-case-title-weight);
+		/* 500 «Medium» — план Т5, узел 381:14526. Не общий
+		   --text-case-title-weight (700): та же роль ещё используется
+		   на h2 странице кейса, план её не трогает. */
+		font-weight: 500;
 		transition: color 250ms ease-out; /* DESIGN.md §4 «Строка кейса»: hover 250мс ease-out */
 	}
 
@@ -99,34 +124,65 @@ const href = withBase(`works/${work.id}/`);
 		color: var(--color-text-muted); /* DESIGN.md §4: подсветка заголовка */
 	}
 
-	.case-row__year {
-		font-family: var(--font-display);
-		font-size: var(--text-year-size);
-		line-height: var(--text-year-line-height);
-		font-weight: var(--text-year-weight);
-		flex-shrink: 0;
-	}
-
 	.case-row__subtitle {
 		max-width: none; /* переопределение typography.css: 66ch — норма для связного текста, здесь короткая подпись в 1–2 строки */
-		margin-top: var(--space-case-title-to-subtitle);
 		font-family: var(--font-body);
-		font-size: var(--text-case-subtitle-size);
-		line-height: var(--text-case-subtitle-line-height);
+		font-size: var(--text-case-row-subtitle-size);
+		line-height: var(--text-case-row-subtitle-line-height);
 		font-weight: var(--text-case-subtitle-weight);
 		color: var(--color-text-subtle);
 	}
 
+	/* Кнопка-приманка «Подробнее о проекте» — план Т5, узел 381:14523.
+	   Стиль красной кнопки героя («Связаться»), подтверждено архитектором:
+	   своего цвета план для этой кнопки не давал. <span>, не <a> — весь
+	   блок уже одна ссылка, вложенная ссылка была бы невалидным HTML. */
+	.case-row__cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		gap: calc(var(--space-unit) * 1); /* 4px — план: «зазор 4 от текста» */
+		height: var(--size-header-control);
+		padding-inline: var(--space-header-button-padding);
+		border-radius: var(--radius-pill-full);
+		font-family: var(--font-body);
+		font-size: var(--text-header-button-size);
+		font-weight: var(--text-pill-weight);
+		line-height: 1;
+		white-space: nowrap;
+		background-color: var(--color-red);
+		color: var(--color-bg);
+		box-shadow: var(--shadow-button-solid);
+		transition: background-color 150ms ease-out;
+	}
+
+	.case-row__link:hover .case-row__cta {
+		background-color: var(--color-red-hover);
+	}
+
+	.case-row__link:active .case-row__cta {
+		background-color: var(--color-red-active);
+	}
+
+	.case-row__cta-icon {
+		flex-shrink: 0; /* reset.css: svg/img как флекс-элемент иначе сжимается до нуля */
+		transform: rotate(90deg); /* план: стрелка повёрнута на 90° вправо */
+	}
+
 	.case-row :global(.case-media) {
-		margin-top: var(--space-subtitle-to-media);
+		margin-top: var(--space-case-row-subtitle-to-media);
+		/* 1280×648 — план Т5, отличается от общего 5:4 (--radius-media
+		   уже 32 глобально из Т1). Только эта карточка: страницу кейса
+		   план не трогает, там .case-media остаётся на 5:4. */
+		aspect-ratio: 1280 / 648;
 	}
 
 	@media (min-width: 600px) {
 		.case-row__header {
 			flex-direction: row;
-			align-items: baseline;
+			align-items: flex-start;
 			justify-content: space-between;
-			gap: calc(var(--space-unit) * 4); /* не задано в DESIGN.md — инженерный дефолт на базовой единице */
 		}
 	}
 </style>
