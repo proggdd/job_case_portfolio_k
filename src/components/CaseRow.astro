@@ -62,14 +62,14 @@ const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 </li>
 
 <style>
-	/* DESIGN.md §5: плавающая шапка наезжала на заголовок кейса при прокрутке
-	   (замечание заказчика 09.08 со скриншотами) — блок отодвигается на её
-	   высоту. Шапка при этом остаётся плавающей над медиа, как задумано в §4.
-	   Доводку до границы блока делает обработчик в Base.astro по атрибуту
-	   [data-snap] на этом же элементе — CSS-привязка убрана 09.08.2026,
-	   она доводила рывком (причина — в комментарии src/styles/layout.css). */
+	/* PLAN-PATCH-2026-08-11.md, B2: шапка больше не липкая (position: sticky
+	   снят в Header.astro), поэтому этот отступ — не высота шапки
+	   (--space-sticky-header), а собственное верхнее поле блока: в макете
+	   от верха блока до верха заголовка 64px, токен --space-case-row-top
+	   (tokens.css). Та же величина вычитается в формуле .case-block-width
+	   (layout.css) — это одна и та же 64px-константа, использованная дважды. */
 	.case-row {
-		padding-top: var(--space-sticky-header);
+		padding-top: var(--space-case-row-top);
 	}
 
 	.case-row__link {
