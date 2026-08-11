@@ -1,20 +1,27 @@
 ---
 /*
- * Шапка — по коду макета из Figma, references/02_sites/Код из фигмы.md
- * (правка 09.08.2026, вечер). Референс-снимок: references/04_screens/
- * Реф новый 09.08.png.
+ * Шапка — геометрия по коду макета из Figma (09.08.2026, узел 381:14535/
+ * 381:14543), состояния кнопок — план PLAN-FIGMA-HERO-CASE-2026-08-11.md,
+ * задача Т4, узлы 381:14420 («Резюме») и 381:14429 («Связаться»).
  *
- * Геометрия взята из макета дословно: аватар 44×44 на отметке 60px
- * от верха, поле по бокам 80px, две кнопки высотой 44 с полем 20,
- * радиусом 100 и зазором 16, текст 20/500, тень 0 1px 2px rgba(0,0,0,.16).
+ * Аватар 56×56 на отметке 60px от верха, поле по бокам 80px, две кнопки
+ * высотой 56 с полем 24 по горизонтали, радиусом 100 и зазором 16,
+ * текст 24/500.
  *
- * ── Что из референса НЕ взято, и почему ──────────────────────────────────
- * Заливка кнопок. В макете чёрная кнопка — «Резюме», обведённая —
- * «Контакты». Заказчик 09.08 оставил распределение прежним: «цвета оставь
- * как были, белое резюме чёрные контакты». Черной остаётся «Контакты»
- * (основное действие, ведёт в телеграм), «Резюме» — белая с обводкой.
- * Форма, размер, радиус, тень и толщина обводки при этом ровно макетные:
- * поменялось только то, какая из двух кнопок какую роль носит.
+ * ── Кнопки переименованы и перекрашены 11.08.2026 ────────────────────────
+ * Было: «Контакты» (чёрная) и «Резюме» (белая с обводкой) — цвета
+ * оставались от решения заказчика 09.08 «цвета оставь как были». План
+ * 11.08 вводит вторую кнопку узлом «Связаться» — впервые в проекте
+ * появляется красный (--color-red из tokens.css). Ссылка и назначение
+ * не изменились: «Связаться» по-прежнему ведёт в телеграм, «Резюме»
+ * по-прежнему открывает файл резюме.
+ *
+ * ── Шесть состояний вместо дефолтных ──────────────────────────────────────
+ * Обе кнопки получили hover/active по таблице плана (раздел 2, «Состояния
+ * кнопок»): у «Резюме» это заливка на наведении/нажатии, у «Связаться» —
+ * три оттенка красного. Разночтение шрифта фреймов состояний (план,
+ * раздел 2) решено по указанию плана: цвета и тени — из фреймов состояний,
+ * типографика — из героя (var(--font-body), --text-header-button-size).
  *
  * ── Стекло убрано ────────────────────────────────────────────────────────
  * Матового стекла (--glass-*) в шапке больше нет: в референсе плоские
@@ -23,11 +30,17 @@
  * кейса (layout.css).
  *
  * ── Обводка через inset box-shadow, не border ────────────────────────────
- * В макете это outline с offset -2, то есть линия внутри и без влияния
- * на размер. border: 2px при box-sizing: border-box съел бы 4px высоты
- * и 4px полей, кнопка перестала бы совпадать с чёрной. inset-тень даёт
- * ту же линию и не трогает раскладку, а свойство outline остаётся
- * свободным для видимого фокуса.
+ * В макете это outline с offset -1.5, то есть линия внутри и без влияния
+ * на размер. border: 1.5px при box-sizing: border-box съел бы высоту
+ * и поля кнопки. inset-тень даёт ту же линию и не трогает раскладку,
+ * а свойство outline остаётся свободным для видимого фокуса.
+ *
+ * ── :focus-visible ────────────────────────────────────────────────────────
+ * В макете фокуса нет (план, Т4: «без него кнопка недоступна с клавиатуры»,
+ * значение поручено согласовать с архитектором отдельно). До ответа
+ * переиспользован тот же контур, что уже стоял на этих кнопках и стоит
+ * на пилюлях и строках кейсов по всему сайту (DESIGN.md §7) — не новое
+ * придуманное значение, а существующая договорённость проекта.
  *
  * Аватар-кружок цветной (grayscale снят 09.08 решением заказчика).
  */
@@ -50,16 +63,16 @@ const resume = contacts.find((contact) => contact.icon === 'resume');
 		/>
 
 		<nav class="site-header__actions" aria-label="Связаться">
-			{telegram && (
-				<a class="header-button header-button--solid" href={telegram.href} target="_blank" rel="noopener noreferrer">
-					Контакты
-					<span class="visually-hidden">, Телеграм (откроется в новом окне)</span>
-				</a>
-			)}
 			{resume && (
 				<a class="header-button header-button--outline" href={resume.href} target="_blank" rel="noopener noreferrer">
 					Резюме
 					<span class="visually-hidden">(откроется в новом окне)</span>
+				</a>
+			)}
+			{telegram && (
+				<a class="header-button header-button--solid" href={telegram.href} target="_blank" rel="noopener noreferrer">
+					Связаться
+					<span class="visually-hidden">, Телеграм (откроется в новом окне)</span>
 				</a>
 			)}
 		</nav>
@@ -141,23 +154,50 @@ const resume = contacts.find((contact) => contact.icon === 'resume');
 		font-weight: var(--text-pill-weight); /* 500 «среднее», как в макете */
 		line-height: 1;
 		white-space: nowrap;
+		transition: background-color 150ms ease-out, color 150ms ease-out, box-shadow 150ms ease-out;
 	}
 
-	/* «Контакты» — основное действие, ведёт в телеграм. Цвета существующие:
-	   текст страницы становится фоном кнопки, фон страницы — её текстом. */
-	.header-button--solid {
-		background-color: var(--color-text);
-		color: var(--color-bg);
-		box-shadow: var(--shadow-control);
-	}
-
-	/* «Резюме» — белая с обводкой 2px, толщина из макета. */
+	/* «Резюме» — вторичная, с обводкой. План Т4, узел 381:14420.
+	   #121212 макета переиспользует --color-text (tokens.css, «Решение
+	   по #121212») — второй почти-чёрный ради 3/255 разницы неоправдан. */
 	.header-button--outline {
-		background-color: var(--color-bg);
+		background-color: transparent;
 		color: var(--color-text);
 		box-shadow:
-			inset 0 0 0 2px var(--color-text),
-			var(--shadow-control);
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-outline);
+	}
+
+	.header-button--outline:hover {
+		background-color: var(--color-text);
+		color: var(--color-bg);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-solid);
+	}
+
+	.header-button--outline:active {
+		background-color: var(--color-button-outline-active);
+		color: var(--color-bg);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-outline);
+	}
+
+	/* «Связаться» — основная, красная. План Т4, узел 381:14429. Ведёт
+	   в телеграм, как и прежняя чёрная «Контакты». */
+	.header-button--solid {
+		background-color: var(--color-red);
+		color: var(--color-bg);
+		box-shadow: var(--shadow-button-solid);
+	}
+
+	.header-button--solid:hover {
+		background-color: var(--color-red-hover);
+	}
+
+	.header-button--solid:active {
+		background-color: var(--color-red-active);
 	}
 
 	.header-button:hover,
@@ -166,12 +206,12 @@ const resume = contacts.find((contact) => contact.icon === 'resume');
 	}
 
 	.header-button:focus-visible {
-		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус */
+		outline: 2px solid var(--color-text); /* DESIGN.md §7: видимый фокус, значение то же, что и раньше на этих кнопках — план Т4 просит согласовать своё, но не даёт числа */
 		outline-offset: 2px;
 	}
 
 	.header-button--solid:focus-visible {
-		outline-offset: 3px; /* обводка не должна сливаться с чёрной заливкой */
+		outline-offset: 3px; /* обводка не должна сливаться с красной заливкой */
 	}
 
 	.visually-hidden {

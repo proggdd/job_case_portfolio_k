@@ -334,7 +334,8 @@
      ниже которой опускаться нельзя ни на каком экране. */
   --size-header-control: 56px;
   --space-header-gap: 16px;
-  --space-header-button-padding: 20px;
+  /* 20 → 24 — план Т4, «Общее для обеих» кнопок героя. */
+  --space-header-button-padding: 24px;
   --space-sticky-header: calc(var(--space-header-top) + var(--size-header-control));
 
   --space-header-to-hero: min(20px, 1.39vw);
