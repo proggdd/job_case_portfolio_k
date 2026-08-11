@@ -12,9 +12,9 @@
  * Было: «Контакты» (чёрная) и «Резюме» (белая с обводкой) — цвета
  * оставались от решения заказчика 09.08 «цвета оставь как были». План
  * 11.08 вводит вторую кнопку узлом «Связаться» — впервые в проекте
- * появляется красный (--color-red из tokens.css). Ссылка и назначение
- * не изменились: «Связаться» по-прежнему ведёт в телеграм, «Резюме»
- * по-прежнему открывает файл резюме.
+ * появляется красный (--color-red из tokens.css). «Связаться» по-прежнему
+ * ведёт в телеграм. «Резюме» 11.08.2026 (C9) стала вкладкой без ссылки —
+ * файла резюме ещё нет, подробности у стилей .header-button--disabled ниже.
  *
  * ── Шесть состояний вместо дефолтных ──────────────────────────────────────
  * Обе кнопки получили hover/active по таблице плана (раздел 2, «Состояния
@@ -70,7 +70,6 @@ import { contacts } from '../data/contacts.ts';
 import { withBase } from '../lib/url';
 
 const telegram = contacts.find((contact) => contact.icon === 'telegram');
-const resume = contacts.find((contact) => contact.icon === 'resume');
 
 const avatarPoster = withBase('media/header/portrait-poster.webp');
 const avatarVideo = withBase('media/header/portrait-loop.mp4');
@@ -96,12 +95,7 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		</div>
 
 		<nav class="site-header__actions" aria-label="Связаться">
-			{resume && (
-				<a class="header-button header-button--outline" href={resume.href} target="_blank" rel="noopener noreferrer">
-					Резюме
-					<span class="visually-hidden">(откроется в новом окне)</span>
-				</a>
-			)}
+			<span class="header-button header-button--outline header-button--disabled">Резюме</span>
 			{telegram && (
 				<a class="header-button header-button--solid" href={telegram.href} target="_blank" rel="noopener noreferrer">
 					Связаться
@@ -274,6 +268,26 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		box-shadow:
 			inset 0 0 0 1.5px var(--color-text),
 			var(--shadow-button-outline);
+	}
+
+	/*
+	 * C9 (PLAN-C-HERO-FONTS-2026-08-11.md). «Резюме» временно без файла —
+	 * заказчик: «с резюме тоже потом, воткнём пока вкладку просто с
+	 * подписью резюме в том же стиле». <span>, не <a href="#">: ссылка,
+	 * которая никуда не ведёт, обманывает скринридер. hover/active
+	 * отключены — лишний сигнал интерактивности у неинтерактивного
+	 * элемента. :focus-visible не нужен отдельно: <span> без tabindex
+	 * не попадает в таб-порядок сам по себе.
+	 */
+	.header-button--disabled,
+	.header-button--disabled:hover,
+	.header-button--disabled:active {
+		background-color: transparent;
+		color: var(--color-text);
+		box-shadow:
+			inset 0 0 0 1.5px var(--color-text),
+			var(--shadow-button-outline);
+		cursor: default;
 	}
 
 	/* «Связаться» — основная, красная. План Т4, узел 381:14429. Ведёт

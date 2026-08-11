@@ -110,9 +110,13 @@ const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIn
 				<Content />
 			</div>
 
-			<div data-reveal>
-				<CaseGallery images={images} title={title} />
-			</div>
+			{
+				images.length > 0 && (
+					<div data-reveal>
+						<CaseGallery images={images} title={title} />
+					</div>
+				)
+			}
 
 			<div data-reveal>
 				<CaseNav prev={prevWork} next={nextWork} />
