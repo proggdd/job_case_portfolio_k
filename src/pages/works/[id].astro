@@ -141,10 +141,24 @@ const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIn
 	 * теперь не меняет ширину колонки, и это тот самый «единый блок».
 	 */
 	.case-page {
+		/* Отступ от потолка — тот же приём и тот же токен, что у .hero
+		   в Hero.astro (главная): margin-top: --space-hero-top, а с 1024px
+		   вычитается высота шапки, потому что она не в потоке отжимает
+		   контент, а стоит поверх (шапка прозрачная, --space-hero-top
+		   меньше её высоты, получается нахлёст, как на главной). Без этой
+		   правки страница кейса начиналась сразу под шапкой (116px),
+		   на 30px ниже, чем герой на главной (86px). */
+		margin-top: var(--space-hero-top);
 		padding-bottom: var(--space-last-case-to-footer); /* тот же отступ, что перед подвалом на главной */
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-case-to-case); /* между крупными блоками страницы — токен «кейс → кейс», своего в DESIGN.md нет */
+	}
+
+	@media (min-width: 1024px) {
+		.case-page {
+			margin-top: calc(var(--space-hero-top) - var(--space-sticky-header));
+		}
 	}
 
 	/*
