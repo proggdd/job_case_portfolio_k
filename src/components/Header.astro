@@ -123,6 +123,11 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 	 * героя (Hero.astro) и header-sentinel (Base.astro).
 	 */
 	.site-header {
+		/* position: relative обязателен — z-index на статичном элементе не
+		   действует. Без него шапка проигрывала стек позиционированному
+		   .hero__media (position: relative) и герой перекрывал кнопки
+		   на любом экране, где они визуально пересекаются (≥1024px). */
+		position: relative;
 		z-index: 10;
 		background-color: transparent;
 		padding-top: var(--space-header-top);
