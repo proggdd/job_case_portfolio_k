@@ -12,7 +12,7 @@
  * Было: «Контакты» (чёрная) и «Резюме» (белая с обводкой) — цвета
  * оставались от решения заказчика 09.08 «цвета оставь как были». План
  * 11.08 вводит вторую кнопку узлом «Связаться» — впервые в проекте
- * появляется красный (--color-red из tokens.css). «Связаться» по-прежнему
+ * появляется красный (--color-accent из tokens.css). «Связаться» по-прежнему
  * ведёт в телеграм. «Резюме» 11.08.2026 (C9) стала вкладкой без ссылки —
  * файла резюме ещё нет, подробности у стилей .header-button--disabled ниже.
  *
@@ -302,17 +302,17 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 	/* «Связаться» — основная, красная. План Т4, узел 381:14429. Ведёт
 	   в телеграм, как и прежняя чёрная «Контакты». */
 	.header-button--solid {
-		background-color: var(--color-red);
+		background-color: var(--color-accent);
 		color: var(--color-bg);
 		box-shadow: var(--shadow-button-solid);
 	}
 
 	.header-button--solid:hover {
-		background-color: var(--color-red-hover);
+		background-color: var(--color-accent-hover);
 	}
 
 	.header-button--solid:active {
-		background-color: var(--color-red-active);
+		background-color: var(--color-accent-active);
 	}
 
 	.header-button:hover,
