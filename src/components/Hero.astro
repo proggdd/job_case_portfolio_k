@@ -100,7 +100,7 @@ const video = withBase('media/avatar/head.mp4');
 
 <section class="hero">
 	<div class="hero__media" data-hero-media>
-		<img class="hero__poster" src={poster} alt="Кирилл Колобанов" width="1108" height="916" />
+		<img class="hero__poster" src={poster} alt="Кирилл Колобанов" width="1104" height="912" />
 		<video
 			class="hero__video"
 			data-hero-video
@@ -177,7 +177,7 @@ const video = withBase('media/avatar/head.mp4');
 		width: var(--size-hero-avatar-centered);
 		/* 1108×916 — реальные размеры перерезанного файла (план C, раздел 1),
 		   не пересчёт от бокса, чтобы не накопить дрейф округления. */
-		aspect-ratio: 1108 / 916;
+		aspect-ratio: 1104 / 912;
 		/* Фон под видео — цвет страницы. Пока кадр не декодирован, <video>
 		   красится браузером в чёрный, отсюда была тёмная полоса по краю. */
 		background-color: var(--color-bg);
