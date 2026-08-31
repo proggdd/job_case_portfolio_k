@@ -448,8 +448,8 @@
      + 3.33 (низ) = 55.57 — один экран 1440×800. */
   --space-hero-top: calc(5.97 * var(--scale-hero));
   --space-hero-avatar-to-role: calc(3.06 * var(--scale-hero));
-  --space-hero-role-to-name: calc(1.67 * var(--scale-hero));
-  --space-hero-name-to-meta: calc(1.67 * var(--scale-hero));
+  --space-hero-role-to-name: clamp(8px, calc(6.51px + 0.381vw), calc(0.833 * var(--scale-hero)));
+  --space-hero-name-to-meta: clamp(16px, calc(13.03px + 0.762vw), calc(1.667 * var(--scale-hero)));
   --space-hero-bottom: calc(3.33 * var(--scale-hero));
 
   /* Прежние отступы героя. Первый экран на них больше не стоит, но
