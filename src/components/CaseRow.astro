@@ -8,7 +8,7 @@
  * Весь блок кейса — ОДНА ссылка на /works/<slug>: кликабельны заголовок,
  * подзаголовок, кнопка-приманка и медиа. Здесь ровно один <a>, оборачивающий
  * всё содержимое строки. Кнопка «Подробнее о проекте» — не второй <a> (это
- * сделало бы вложенную ссылку, невалидный HTML), а <span>: визуально кнопка,
+ * всё содержимое строки. Кнопка «Подробнее» — не второй <a> (это
  * фактически часть текста единственной ссылки блока.
  *
  * Год убран из блока (план, раздел 2: в таблице дельты строки «год» нет;
@@ -42,7 +42,6 @@ interface Props {
 const { work, eager = false } = Astro.props;
 const { title, summary, video, poster } = work.data;
 const href = withBase(`works/${work.id}/`);
-const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 ---
 
 <li class="case-row" data-reveal>
@@ -52,10 +51,7 @@ const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 				<h3 class="case-row__title">{title}</h3>
 				<p class="case-row__subtitle">{summary}</p>
 			</div>
-			<span class="case-row__cta">
-				Подробнее о проекте
-				<img class="case-row__cta-icon" src={arrowIcon} alt="" width="24" height="24" />
-			</span>
+			<span class="case-row__cta">Подробнее</span>
 		</div>
 		<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager={eager} />
 	</a>
@@ -108,14 +104,16 @@ const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 		min-width: 0; /* заголовок и подзаголовок сжимаются раньше кнопки */
 	}
 
+	/* Макет «Frame 2147225381»: 32px Bold, межстрочный 100%, цвет #121212
+	   наследуется от .case-row__link. Размер — свой токен ленты:
+	   общий --text-case-title-size остался 24px для h2 страницы кейса.
+	   Вес вернулся к общему --text-case-title-weight (700), прежние 500
+	   были из макета Т5, он заменён. */
 	.case-row__title {
-		font-family: var(--font-accent); /* C5: Jost вместо Oswald, заголовок карточки кейса размечен дисплейной гарнитурой */
-		font-size: var(--text-case-title-size);
+		font-family: var(--font-accent);
+		font-size: var(--text-case-row-title-size);
 		line-height: var(--text-case-title-line-height);
-		/* 500 «Medium» — план Т5, узел 381:14526. Не общий
-		   --text-case-title-weight (700): та же роль ещё используется
-		   на h2 странице кейса, план её не трогает. */
-		font-weight: 500;
+		font-weight: var(--text-case-title-weight);
 		transition: color 250ms ease-out; /* DESIGN.md §4 «Строка кейса»: hover 250мс ease-out */
 	}
 
@@ -133,16 +131,17 @@ const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 		color: var(--color-text-subtle);
 	}
 
-	/* Кнопка-приманка «Подробнее о проекте» — план Т5, узел 381:14523.
-	   Стиль красной кнопки героя («Связаться»), подтверждено архитектором:
-	   своего цвета план для этой кнопки не давал. <span>, не <a> — весь
-	   блок уже одна ссылка, вложенная ссылка была бы невалидным HTML. */
+	/* Кнопка-приманка «Подробнее» — макет «Frame 2147225381»: 137×48,
+	   фон #F25623, радиус 100, текст 16px Medium белым. Стрелка в макете
+	   скрыта (display: none), поэтому иконки здесь нет. Ширина 137 выходит
+	   сама: 89 текста + 2 x 24 поля --space-header-button-padding.
+	   <span>, не <a> — весь блок уже одна ссылка, вложенная ссылка была бы
+	   невалидным HTML. */
 	.case-row__cta {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
-		gap: calc(var(--space-unit) * 1); /* 4px — план: «зазор 4 от текста» */
 		height: var(--size-header-control);
 		padding-inline: var(--space-header-button-padding);
 		border-radius: var(--radius-pill-full);
@@ -175,17 +174,14 @@ const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 		}
 	}
 
-	.case-row__cta-icon {
-		flex-shrink: 0; /* reset.css: svg/img как флекс-элемент иначе сжимается до нуля */
-		transform: rotate(90deg); /* план: стрелка повёрнута на 90° вправо */
-	}
-
 	.case-row :global(.case-media) {
 		margin-top: var(--space-case-row-subtitle-to-media);
-		/* 1280×648 — план Т5, отличается от общего 5:4 (--radius-media
-		   уже 32 глобально из Т1). Только эта карточка: страницу кейса
-		   план не трогает, там .case-media остаётся на 5:4. */
-		aspect-ratio: 1280 / 648;
+		/* Макет «Frame 2147225381»: рамка 1160×670 (было 1280×648 из Т5),
+		   фон #111111 — он виден по краям кадра и на время загрузки видео.
+		   Только эта карточка: страницу кейса макет не трогает, там
+		   .case-media остаётся на 5:4 со светлой заглушкой. */
+		aspect-ratio: 1160 / 670;
+		background-color: var(--color-surface-dark);
 	}
 
 	@media (min-width: 600px) {
@@ -193,6 +189,22 @@ const arrowIcon = withBase('media/icons/arrow-up-bold.svg');
 			flex-direction: row;
 			align-items: flex-start;
 			justify-content: space-between;
+		}
+
+		/* Строку заголовка в макете держит кнопка справа: её высота 48,
+		   а кегль заголовка даёт 32. Без этой подпорки подзаголовок
+		   поднимается на 16px выше макетной отметки 100 и весь блок
+		   уезжает вверх. До 600px кнопка стоит под заголовком, лишняя
+		   высота там не нужна. */
+		.case-row__title {
+			display: flex;
+			align-items: center;
+			min-height: var(--size-header-control);
+		}
+
+		/* Макет: подпись занимает 587 из 1160 ширины блока. */
+		.case-row__subtitle {
+			max-width: var(--size-case-row-subtitle-max-width);
 		}
 	}
 </style>
