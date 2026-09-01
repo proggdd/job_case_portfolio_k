@@ -1,0 +1,95 @@
+---
+/*
+ * Тёмные карточки-цитаты страницы кейса — DESIGN.md §3, «Карточка-цитата».
+ * Две в ряд на десктопе, одна колонка на мобайле; число карточек в блоке
+ * произвольное (в макете их две у юридических ограничений и четыре
+ * у гипотез — те же две в ряд, просто два ряда).
+ *
+ * Высота 171 из макета — минимум, а не константа: на узкой колонке текст
+ * переносится в четыре строки, жёсткая высота обрезала бы его.
+ *
+ * Правое поле 29 из замера [530:7144] отдельным значением не заводится:
+ * это следствие того, что колонка текста ограничена 525 внутри поля 16.
+ * Одно правило вместо двух чисел.
+ */
+import { withBase } from '../lib/url';
+
+interface Props {
+	/** Тексты карточек, по одной строке на карточку */
+	items: string[];
+}
+
+const { items } = Astro.props;
+---
+
+<ul class="quote-cards">
+	{
+		items.map((text) => (
+			<li class="quote-cards__item">
+				{/* Значок — общий растр для всех карточек, декоративный:
+				    смысл несёт текст рядом, дублировать его в alt нечем. */}
+				<img
+					class="quote-cards__icon"
+					src={withBase('media/ui/quote-icon.webp')}
+					alt=""
+					width="35"
+					height="35"
+					loading="lazy"
+					decoding="async"
+				/>
+				<p class="quote-cards__text">{text}</p>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.quote-cards {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-case-cards-gap);
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	/*
+	 * Значок сверху, текст под ним — раскладка из замера [530:7143]:
+	 * значок x/y 156/1746 при карточке 140/1730 (то есть поле 16), текст
+	 * с y=1797 при низе значка 1781, то есть зазор 16.
+	 *
+	 * Поле 16 со всех сторон плюс min-height 171 сами дают нижний отступ 20
+	 * из макета: 16 + 35 + 16 + 84 (три строки по 28) = 151, до низа
+	 * карточки остаётся ровно 20. Отдельным значением это не задаётся.
+	 */
+	.quote-cards__item {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-case-heading);
+		min-height: var(--size-case-card-min-height);
+		padding: var(--size-case-card-padding);
+		border-radius: var(--radius-case-card);
+		background-color: var(--color-text); /* тёмная плашка на белой странице */
+	}
+
+	.quote-cards__icon {
+		flex-shrink: 0; /* reset.css даёт img display:block; во флексе значок иначе сжимается */
+		width: var(--size-case-card-icon);
+		height: var(--size-case-card-icon);
+	}
+
+	.quote-cards__text {
+		max-width: var(--size-case-card-text);
+		color: var(--color-bg);
+		font-size: var(--text-case-quote-size);
+		line-height: var(--text-case-quote-line-height);
+		font-weight: var(--text-case-quote-weight);
+	}
+
+	@media (min-width: 1024px) {
+		.quote-cards {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+</style>

@@ -1,0 +1,160 @@
+---
+/*
+ * Кнопка-капсула вне шапки — DESIGN.md §3, «Кнопка "На главную" и нижний CTA».
+ * Два вида: `outline` (вторичная, с обводкой) и `solid` (первичная, оранжевая).
+ * Три состояния берутся из таблицы «Состояния кнопок», редакция 31.08.2026.
+ *
+ * Почему отдельный компонент, а не переиспользование .header-button:
+ * у кнопок шапки другая геометрия (поля 24 в обоих видах) и остались тени
+ * августовской редакции. Тянуть их сюда значило бы либо править шапку вне
+ * границ задачи (правило 5), либо унаследовать отменённые значения.
+ *
+ * Обводка сделана настоящим `border`, а не inset-тенью, как в шапке:
+ * ширина 156 из макета складывается с учётом двух линий по 1.5
+ * (16 + 121 + 16 + 1.5 × 2), и inset-тень дала бы 153.
+ *
+ * При нажатии обводка обесцвечивается, а не снимается — DESIGN.md фиксирует
+ * это как сознательное отступление: снятие сдвинуло бы содержимое на 3px
+ * в момент клика.
+ */
+import { withBase } from '../lib/url';
+
+interface Props {
+	/** Подпись кнопки */
+	label: string;
+	/** Адрес. Внутренние пути прогоняются через withBase() */
+	href: string;
+	/** Вид: вторичная с обводкой или первичная оранжевая */
+	variant?: 'outline' | 'solid';
+	/** Значок слева от подписи; сейчас нужен только «назад» */
+	icon?: 'arrow-left';
+	/** Внешняя ссылка — открывается в новой вкладке, помечается для скринридера */
+	external?: boolean;
+	/** Пояснение для скринридера, если подписи мало */
+	hint?: string;
+}
+
+const { label, href, variant = 'outline', icon, external = false, hint } = Astro.props;
+
+// Внешние адреса withBase() не трогает: он приставляет базовый путь сайта.
+const resolvedHref = external ? href : withBase(href);
+---
+
+<a
+	class:list={['pill-button', `pill-button--${variant}`]}
+	href={resolvedHref}
+	{...external ? { target: '_blank', rel: 'noopener noreferrer' } : {}}
+>
+	{
+		icon === 'arrow-left' && (
+			/* tabler arrow-left, обведён currentColor — цвет значка едет
+			   вместе с цветом подписи во всех трёх состояниях */
+			<svg
+				class="pill-button__icon"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<path d="M5 12h14" />
+				<path d="M5 12l6 6" />
+				<path d="M5 12l6 -6" />
+			</svg>
+		)
+	}
+	<span>{label}</span>
+	{hint && <span class="visually-hidden">{hint}</span>}
+</a>
+
+<style>
+	.pill-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-button-icon-gap);
+		height: var(--size-button-height);
+		border-radius: var(--radius-pill-full);
+		border: var(--size-button-border) solid transparent;
+		font-family: var(--font-body);
+		font-size: var(--text-header-button-size);
+		font-weight: var(--text-button-weight);
+		line-height: 1;
+		white-space: nowrap;
+		text-decoration: none;
+		/* Тот же асимметричный тайминг, что у кнопок шапки: вход в нажатие
+		   мгновенный, возврат 180мс. Причина разобрана в Header.astro —
+		   при симметричных 150мс нажатие короче анимации и не читается. */
+		transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+	}
+
+	.pill-button:active {
+		transition-duration: 0ms;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pill-button {
+			transition-duration: 0ms;
+		}
+	}
+
+	.pill-button__icon {
+		flex-shrink: 0; /* reset.css даёт svg display:block; без этого значок сжимается в ноль */
+		width: var(--size-button-icon);
+		height: var(--size-button-icon);
+	}
+
+	/* Вторичная. Теней нет — редакция 31.08.2026 сняла их у обоих видов. */
+	.pill-button--outline {
+		padding-inline: var(--space-button-padding-outline);
+		background-color: transparent;
+		border-color: var(--color-text);
+		color: var(--color-text);
+	}
+
+	.pill-button--outline:hover {
+		background-color: var(--color-text);
+		color: var(--color-bg);
+	}
+
+	.pill-button--outline:active {
+		background-color: var(--color-button-outline-active);
+		border-color: transparent; /* обесцвечена, а не снята: снятие двигает содержимое на 3px */
+		color: var(--color-bg);
+	}
+
+	/* Первичная. */
+	.pill-button--solid {
+		padding-inline: var(--space-button-padding-solid);
+		background-color: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.pill-button--solid:hover {
+		background-color: var(--color-accent-hover);
+	}
+
+	.pill-button--solid:active {
+		background-color: var(--color-accent-active);
+	}
+
+	.pill-button--solid:focus-visible {
+		outline-offset: 3px; /* контур не должен сливаться с оранжевой заливкой */
+	}
+
+	/* Стили в Astro скоупятся по компонентам, поэтому определение повторяется
+	   здесь так же, как в Header.astro и ContactPills.astro. */
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+</style>
