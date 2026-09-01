@@ -4,6 +4,7 @@ year: 2025
 summary: "Перевёл ручное оформление аренды из Telegram и звонков в единое приложение."
 role: "Роль уточняется"
 segment: B2C
+video: media/iq-auto/case.mp4
 poster: media/iq-auto/cover.webp
 featured: true
 order: 1

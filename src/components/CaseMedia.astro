@@ -50,7 +50,16 @@ const posterSrc = withBase(poster);
 
 {
 	videoSrc ? (
-		<video class="case-media" muted playsinline loop preload="none" poster={posterSrc} aria-label={alt}>
+		<video
+			class="case-media"
+			data-case-video
+			muted
+			playsinline
+			loop
+			preload="metadata"
+			poster={posterSrc}
+			aria-label={alt}
+		>
 			<source src={videoSrc} type="video/mp4" />
 			{posterSrc && <img class="case-media" src={posterSrc} alt={alt} loading={loading} decoding="async" />}
 		</video>
@@ -60,3 +69,49 @@ const posterSrc = withBase(poster);
 		<div class="case-media" aria-hidden="true"></div>
 	)
 }
+
+<script>
+	/*
+	 * Воспроизведение медиа кейса. Атрибута autoplay намеренно нет: он
+	 * запускает ролик и при prefers-reduced-motion: reduce, а отменить это
+	 * средствами CSS невозможно — видео не анимация, остановить его может
+	 * только скрипт. Тот же приём, что у аватара в Hero.astro: при запросе
+	 * на покой файл просто не проигрывается, зритель видит постер (кадр 0
+	 * того же ролика, поэтому подмены не видно).
+	 *
+	 * IntersectionObserver, а не безусловный play(): роликов на странице
+	 * может быть несколько (лента главной), и держать их все играющими за
+	 * пределами экрана — расход батареи без единого зрителя. preload
+	 * оставлен на metadata: сам файл тянется в момент play(), не раньше.
+	 *
+	 * Скрипт в компоненте, который рендерится по нескольку раз на странице:
+	 * Astro поднимает такие <script> в бандл страницы и включает один раз,
+	 * дублей обработчика не будет.
+	 */
+	const caseVideos = document.querySelectorAll<HTMLVideoElement>('video[data-case-video]');
+
+	if (caseVideos.length > 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					const video = entry.target as HTMLVideoElement;
+
+					if (entry.isIntersecting) {
+						/* play() отдаёт промис и отклоняет его, если браузер счёл
+						   запуск незапрошенным. Ловим молча: постер уже на месте,
+						   показывать зрителю нечего, а необработанный reject
+						   попадёт в консоль ошибкой. */
+						video.play().catch(() => {});
+					} else {
+						video.pause();
+					}
+				}
+			},
+			{ threshold: 0.25 }
+		);
+
+		for (const video of caseVideos) {
+			observer.observe(video);
+		}
+	}
+</script>
