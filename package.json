@@ -12,6 +12,7 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.1.6"
+    "astro": "^7.1.6",
+    "morphicons": "^1.7.1"
   }
 }
