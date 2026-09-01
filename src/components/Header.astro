@@ -117,6 +117,28 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 			<MorphIcon icon={Menu} size={28} reducedMotion="user" />
 		</button>
 	</div>
+
+	{/*
+	 * Панель мобильного меню — патч T4 Т3. Числа из выгрузки Figma
+	 * css_571-5444: панель 393×553 фоном --color-text от верха экрана
+	 * (Rectangle 240661925), два пункта 393×48 на y=64 и y=112, фото
+	 * в боксе 361×351 на x=16 y=178 со скруглением медиа (Mask group).
+	 * «Резюме» — <span> без ссылки, как в шапке (файла резюме нет, C9);
+	 * куда ведёт пункт — открытый вопрос патча §6. «Связаться» — тот же
+	 * телеграм, что у кнопки шапки.
+	 */}
+	<nav id="menu-panel" class="menu-panel" aria-label="Меню" hidden>
+		<span class="menu-panel__item menu-panel__item--disabled">Резюме</span>
+		{telegram && (
+			<a class="menu-panel__item" href={telegram.href} target="_blank" rel="noopener noreferrer">
+				Связаться
+				<span class="visually-hidden">, Телеграм (откроется в новом окне)</span>
+			</a>
+		)}
+		<div class="menu-panel__photo">
+			<img src={withBase('media/menu/menu-photo.webp')} alt="" width="722" height="702" loading="lazy" />
+		</div>
+	</nav>
 </header>
 
 <style>
@@ -367,6 +389,18 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		display: none; /* десктоп: бургера в макете нет */
 	}
 
+	.menu-panel {
+		display: none; /* десктоп: панели нет, бургер её не открывает */
+	}
+
+	/* Тайминг инверсии плашки — тот же 180ms ease, что у .header-button:
+	   договорённость проекта, не новое значение (ср. focus-outline выше). */
+	@media (prefers-reduced-motion: reduce) {
+		.menu-panel__item {
+			transition-duration: 0ms;
+		}
+	}
+
 	@media (max-width: 767.98px) {
 		.site-header {
 			padding-top: 0; /* полоса от верха экрана, высота ровно 64 */
@@ -388,6 +422,8 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
+			position: relative;
+			z-index: 21; /* над панелью (20) — крестик открытого меню виден и нажимается */
 			width: 48px;
 			height: 48px;
 			padding: 0;
@@ -401,6 +437,65 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		#menu:focus-visible {
 			outline: 2px solid var(--color-bg);
 			outline-offset: 2px;
+		}
+
+		.menu-panel {
+			display: block;
+			position: fixed;
+			inset: 0 0 auto 0;
+			z-index: 20; /* над полосой шапки (z-index 10) */
+			height: 553px;
+			max-height: 100dvh;
+			padding-top: 64px; /* пункты идут под полосой, y=64 */
+			background-color: var(--color-text);
+			overflow-y: auto;
+		}
+
+		.menu-panel[hidden] {
+			display: none;
+		}
+
+		.menu-panel__item {
+			display: flex;
+			align-items: center;
+			height: 48px;
+			padding-inline: 16px; /* x=16 */
+			font-weight: 500;
+			font-size: 20px;
+			line-height: 1;
+			color: var(--color-bg);
+			background-color: var(--color-text);
+			text-decoration: none;
+			white-space: nowrap;
+			transition: background-color 180ms ease, color 180ms ease;
+		}
+
+		.menu-panel__item--disabled {
+			cursor: default; /* «Резюме» пока без адреса — как в шапке (C9) */
+		}
+
+		/* Второй кадр макета (Frame 2147225413): наведённая плашка белая,
+		   текст тёмный. Фокус — тем же инвертом. */
+		.menu-panel__item:hover,
+		.menu-panel__item:focus-visible {
+			background-color: var(--color-bg);
+			color: var(--color-text);
+		}
+
+		.menu-panel__photo {
+			margin: 18px 16px 0; /* x=16; от конца пункта 2 (y=160) до фото (y=178) */
+			width: calc(100% - 32px);
+			max-width: 361px; /* бокс 361×351 */
+			aspect-ratio: 361 / 351;
+			border-radius: var(--radius-media); /* «скругление как у медиа» */
+			overflow: hidden;
+		}
+
+		.menu-panel__photo img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
 		}
 	}
 </style>
@@ -460,5 +555,34 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		// достаточно.
 		video.src = src;
 		video.load();
+	}
+</script>
+
+<script>
+	/*
+	 * Мобильное меню — патч T4 Т3. Открытие и закрытие по кнопке #menu,
+	 * закрытие по Escape с возвратом фокуса, блокировка прокрутки фона
+	 * при открытой панели. Морфинг иконки добавляется в Т4.
+	 */
+	const menuButton = document.querySelector<HTMLButtonElement>('#menu');
+	const menuPanel = document.querySelector<HTMLElement>('#menu-panel');
+
+	if (menuButton && menuPanel) {
+		const setMenu = (open: boolean) => {
+			menuButton.setAttribute('aria-expanded', String(open));
+			menuPanel.hidden = !open;
+			document.body.style.overflow = open ? 'hidden' : '';
+		};
+
+		menuButton.addEventListener('click', () => {
+			setMenu(menuButton.getAttribute('aria-expanded') !== 'true');
+		});
+
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {
+				setMenu(false);
+				menuButton.focus();
+			}
+		});
 	}
 </script>
