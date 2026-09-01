@@ -4,9 +4,9 @@
  * 381:14543), состояния кнопок — план PLAN-FIGMA-HERO-CASE-2026-08-11.md,
  * задача Т4, узлы 381:14420 («Резюме») и 381:14429 («Связаться»).
  *
- * Аватар 56×56 на отметке 60px от верха, поле по бокам 80px, две кнопки
- * высотой 56 с полем 24 по горизонтали, радиусом 100 и зазором 16,
- * текст 24/500.
+ * Две кнопки высотой 48 с полем 24 по горизонтали, радиусом 100
+ * и зазором 16, текст 16/500 (DESIGN.md §2, редакция 31.08). Поле
+ * по бокам 80px. Слева от кнопок в макете ничего нет.
  *
  * ── Кнопки переименованы и перекрашены 11.08.2026 ────────────────────────
  * Было: «Контакты» (чёрная) и «Резюме» (белая с обводкой) — цвета
@@ -42,29 +42,13 @@
  * на пилюлях и строках кейсов по всему сайту (DESIGN.md §7) — не новое
  * придуманное значение, а существующая договорённость проекта.
  *
- * Аватар-кружок цветной (grayscale снят 09.08 решением заказчика).
- *
- * ── Видео вместо статичной фотографии, 11.08.2026 ────────────────────────
- * PLAN-PATCH-2026-08-11.md, B1. Заказчик: видео в кружке шапки вместо
- * фотографии — отдельный анимированный портрет, к 3D-голове героя
- * отношения не имеет (её не трогать, правило раздела 5 плана).
- *
- * Разметка и приём — те же, что в Hero.astro: статичный <img>-постер
- * и <video> поверх него, видимость переключает JS через data-active
- * после первого декодированного кадра. `autoplay muted loop playsinline`
- * стоят на <video> как обычные HTML-атрибуты — без muted и playsinline
- * автозапуск не пройдёт ни в одном браузере, но сработают они только
- * после того, как скрипт ниже проставит настоящий src (изначально
- * в разметке только data-src) — так видео не запрашивается сетью
- * вообще, если !prefers-reduced-motion не выполнено.
- *
- * Пауза, когда кружок не виден. Ролик крутится на каждой странице всё
- * время, пока открыта вкладка, и ест батарею ради 56 пикселей в углу.
- * IntersectionObserver здесь работает не один раз (как в Hero, где он
- * только триггерит загрузку и отключается), а постоянно переключает
- * play/pause на каждое пересечение — сам приём наблюдения переиспользован,
- * логика подписки достроена под многократное срабатывание. Плюс
- * document.visibilitychange — пауза в фоновой вкладке.
+ * ── Видео-миниатюра в шапке убрана, 01.09.2026 ──────────────────────────
+ * Круглый видео-портрет 56×56 слева в шапке (план B1) снят: в макете
+ * первого экрана (узел 561:7442) у шапки только две кнопки справа,
+ * миниатюры среди детей фрейма нет — сверка SVERKA-HERO-DESKTOP §3.4.
+ * Вместе с разметкой удалён её загрузчик (IntersectionObserver +
+ * visibilitychange). 3D-голова героя (Hero.astro) — отдельная вещь,
+ * не тронута.
  */
 import MorphIcon from 'morphicons/astro';
 import { Menu } from 'lucide';
@@ -72,30 +56,10 @@ import { contacts } from '../data/contacts.ts';
 import { withBase } from '../lib/url';
 
 const telegram = contacts.find((contact) => contact.icon === 'telegram');
-
-const avatarPoster = withBase('media/header/portrait-poster.webp');
-const avatarVideo = withBase('media/header/portrait-loop.mp4');
 ---
 
 <header class="site-header" data-header>
 	<div class="site-header__inner">
-		<div class="avatar-media" data-avatar-media>
-			<img class="avatar avatar__poster" src={avatarPoster} alt="" aria-hidden="true" width="168" height="168" />
-			<video
-				class="avatar avatar__video"
-				data-avatar-video
-				data-src={avatarVideo}
-				poster={avatarPoster}
-				autoplay
-				muted
-				loop
-				playsinline
-				aria-hidden="true"
-				tabindex="-1"
-				width="168"
-				height="168"></video>
-		</div>
-
 		<nav class="site-header__actions" aria-label="Связаться">
 			<span class="header-button header-button--outline header-button--disabled">Резюме</span>
 			{telegram && (
@@ -180,7 +144,7 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 	.site-header__inner {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: flex-end; /* слева от кнопок в макете ничего нет — узел 561:7442 */
 		gap: var(--space-header-gap);
 		width: 100%;
 		margin-inline: auto;
@@ -204,43 +168,6 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		display: flex;
 		align-items: center;
 		gap: var(--space-header-gap);
-	}
-
-	.avatar-media {
-		position: relative;
-		width: var(--size-header-control);
-		height: var(--size-header-control);
-		flex-shrink: 0;
-	}
-
-	/* Круглая маска остаётся: DESIGN.md §2 сняла её только с героя. */
-	.avatar {
-		display: block;
-		width: 100%;
-		height: 100%;
-		border-radius: 50%;
-		object-fit: cover;
-		background-color: var(--color-surface); /* фон под загрузку файла */
-	}
-
-	.avatar__video {
-		position: absolute;
-		inset: 0;
-		visibility: hidden; /* показывается скриптом, только если видео действительно загрузилось */
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.avatar__video {
-			display: none; /* скрипт и так не грузит видео при reduced motion */
-		}
-	}
-
-	.avatar-media[data-active='true'] .avatar__video {
-		visibility: visible;
-	}
-
-	.avatar-media[data-active='true'] .avatar__poster {
-		visibility: hidden;
 	}
 
 	.header-button {
@@ -413,9 +340,8 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 			justify-content: flex-end;
 		}
 
-		.avatar-media,
 		.site-header__actions {
-			display: none; /* в мобильном макете их нет; разметка нужна десктопу */
+			display: none; /* в мобильном макете кнопок нет; разметка нужна десктопу */
 		}
 
 		#menu {
@@ -499,64 +425,6 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		}
 	}
 </style>
-
-<script>
-	/*
-	 * Видео-портрет в кружке шапки — план B1. Приём загрузки списан с
-	 * IntersectionObserver в Hero.astro (там видео тоже не грузится, пока
-	 * элемент не показался на экране), но здесь наблюдатель не отключается
-	 * после первого срабатывания: ролик должен вставать на паузу каждый раз,
-	 * когда кружок уходит за край экрана, не только один раз при заходе.
-	 */
-	const media = document.querySelector<HTMLElement>('[data-avatar-media]');
-	const video = document.querySelector<HTMLVideoElement>('[data-avatar-video]');
-	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-	if (media && video && !reducedMotion) {
-		const src = video.dataset.src ?? '';
-
-		video.addEventListener(
-			'loadeddata',
-			() => {
-				media.dataset.active = 'true';
-			},
-			{ once: true }
-		);
-
-		// Пауза за экраном: постоянный наблюдатель, не одноразовый — переключает
-		// play/pause на каждое пересечение границы вьюпорта.
-		const observer = new IntersectionObserver((entries) => {
-			for (const entry of entries) {
-				if (entry.isIntersecting) {
-					video.play().catch(() => {});
-				} else {
-					video.pause();
-				}
-			}
-		});
-		observer.observe(media);
-
-		// Пауза в фоновой вкладке: play() при возврате — только если кружок
-		// в этот момент действительно виден на экране.
-		document.addEventListener('visibilitychange', () => {
-			if (document.hidden) {
-				video.pause();
-				return;
-			}
-			const rect = media.getBoundingClientRect();
-			if (rect.bottom > 0 && rect.top < window.innerHeight) {
-				video.play().catch(() => {});
-			}
-		});
-
-		// src проставляется только теперь: без этого браузер не запросил бы
-		// файл вовсе (в разметке — data-src, не src), а атрибут autoplay
-		// на <video> подхватывает воспроизведение сам, как только данных
-		// достаточно.
-		video.src = src;
-		video.load();
-	}
-</script>
 
 <script>
 	/*
