@@ -56,19 +56,38 @@ import { contacts } from '../data/contacts.ts';
 import { withBase } from '../lib/url';
 
 const telegram = contacts.find((contact) => contact.icon === 'telegram');
+
+/*
+ * ── Голая шапка на странице кейса, 02.09.2026 ────────────────────────────
+ * В десктопном макете кейса [552:1006] шапки нет вовсе: наверху только
+ * пилюля «На главную», кнопок «Резюме» и «Связаться» не существует.
+ * Мобильная тёмная полоса с бургером при этом остаётся — в узле [561:6599]
+ * она есть.
+ *
+ * Поэтому не «скрыть кнопки», а «шапка не рисуется от 768px»: скрытые
+ * кнопки оставили бы после себя пустую полосу высотой 108 (60 отступа
+ * плюс 48 кнопки), а страница кейса начинается своей пилюлей на y=60.
+ */
+interface Props {
+	bare?: boolean;
+}
+
+const { bare = false } = Astro.props;
 ---
 
-<header class="site-header" data-header>
+<header class:list={['site-header', bare && 'site-header--bare']} data-header>
 	<div class="site-header__inner">
-		<nav class="site-header__actions" aria-label="Связаться">
-			<span class="header-button header-button--outline header-button--disabled">Резюме</span>
-			{telegram && (
-				<a class="header-button header-button--solid" href={telegram.href} target="_blank" rel="noopener noreferrer">
-					Связаться
-					<span class="visually-hidden">, Телеграм (откроется в новом окне)</span>
-				</a>
-			)}
-		</nav>
+		{!bare && (
+			<nav class="site-header__actions" aria-label="Связаться">
+				<span class="header-button header-button--outline header-button--disabled">Резюме</span>
+				{telegram && (
+					<a class="header-button header-button--solid" href={telegram.href} target="_blank" rel="noopener noreferrer">
+						Связаться
+						<span class="visually-hidden">, Телеграм (откроется в новом окне)</span>
+					</a>
+				)}
+			</nav>
+		)}
 
 		{/*
 		 * Кнопка-бургер — патч T4, только мобильная раскладка (<768px).
@@ -168,6 +187,14 @@ const telegram = contacts.find((contact) => contact.icon === 'telegram');
 		display: flex;
 		align-items: center;
 		gap: var(--space-header-gap);
+	}
+
+	/* Страница кейса: от 768px шапки нет. Мобильная полоса (правило
+	   в @media max-width: 767.98px ниже) при этом остаётся нетронутой. */
+	@media (min-width: 768px) {
+		.site-header--bare {
+			display: none;
+		}
 	}
 
 	.header-button {

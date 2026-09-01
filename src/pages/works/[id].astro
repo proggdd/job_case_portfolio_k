@@ -1,60 +1,38 @@
 ---
 /*
- * Страница кейса — DESIGN.md §3 «Схема», карточка P5-T3. Маршрут по
- * коллекции works через getStaticPaths (Content Layer API: путь строится
- * из entry.id, не entry.slug — известная ловушка проекта, MASTER_PLAN
- * «Известные ловушки» п.2).
+ * Страница кейса — DESIGN.md §3, «Страница кейса, десктоп», редакция
+ * 02.09.2026. Переписана по макету [552:1006] (1440 × 9357, белый фон,
+ * боковое поле 140, колонка 1160).
  *
- * Заголовок — единственный <h1> ЭТОЙ страницы (DESIGN.md §8: один H1 на
- * страницу, у каждой страницы своя иерархия — не конфликтует с H1 «имя»
- * на главной, это разные страницы). Стиль h1 и h2 внутри Content ниже
- * переиспользуют токены --text-case-title-* (заголовок кейса, DESIGN.md §2):
- * отдельной типографической роли «заголовок страницы кейса» и «подзаголовок
- * блока кейса» в спецификации нет — не изобретено новое значение, взято
- * уже измеренное, тем же приёмом, что число колонок сетки в P4-T3.
+ * Маршрут по коллекции works через getStaticPaths (Content Layer API:
+ * путь строится из entry.id, поля slug нет — ловушка проекта).
  *
- * Метаданные (DESIGN.md §3, модель данных кейса): год, роль, категория
- * (segment). Поля «клиент» в модели нет — исключено намеренно, в макете
- * его нет (DESIGN.md §3: «Поля client нет намеренно»); карточка в
- * MASTER_PLAN упоминает клиента в общей формулировке, но модель данных —
- * более детальный и замороженный источник (тот же приоритет, что был
- * выбран для состава подвала в P5-T1, см. комментарий Footer.astro).
+ * ── Что ушло со страницы 02.09.2026 ──────────────────────────────────────
+ * Галерея (CaseGallery), переход «Следующий кейс» (CaseNav), метаданные
+ * год/роль/категория списком, кнопки шапки. Ничего этого в макете нет,
+ * решение заказчика: «всё делать как в макете». Компоненты остались
+ * в репозитории — снят вызов, не файл.
  *
- * Блоки «задача, решение, результат» — тело markdown-файла (`description`
- * из DESIGN.md — это body коллекции, не поле схемы, P3-T3), с реальным
- * текстом от дизайнера в Ф6 (P6-T2). На MVP — текст-рыба с той же
- * структурой заголовков.
+ * ── Ширина колонки ───────────────────────────────────────────────────────
+ * .case-block-width (ширина от высоты окна) больше не участвует: в макете
+ * колонка кейса — это обычный контент-контейнер, 1160 при поле 140.
+ * Существующий --space-content-padding даёт ровно это на 1440.
  *
- * Основное медиа кейса (video/poster) показано тем же компонентом
- * CaseMedia, что и на главной — модель данных явно описывает `video` как
- * «основное видео кейса», переиспользование не нарушает границы карточки.
+ * ── Тело страницы ────────────────────────────────────────────────────────
+ * Рисуется из frontmatter-поля blocks (см. src/content.config.ts). Кейс
+ * без blocks рендерится по-старому, из markdown-тела — так держится
+ * второй кейс (jobs), у которого своей структуры ещё нет.
  *
- * Возврат на главную: явная ссылка в начале страницы. Шапка сейчас не
- * даёт такой ссылки — аватар в Header.astro не обёрнут в <a> (P5-T1),
- * трогать шапку вне границ этой карточки (правило 7 мастер-плана). С P11-T3
- * такая же ссылка есть и в подвале (Footer.astro) — не дублирование
- * по ошибке, а расчёт на то, что после исчезновения шапки у подвала
- * (P11-T2) до верхней ссылки пришлось бы скроллить обратно.
- * «Следующий кейс» в подвале (CaseNav с nextWork) убран 09.08.2026 по
- * замечанию заказчика: та же ссылка уже стоит в CaseNav ниже, в двух шагах
- * прокрутки — там дубль без пользы, не запасной адрес. «На главную» в
- * подвале эта логика не касается: в теле кейса такой ссылки нет вовсе.
- *
- * P11-T5: data-reveal на header/медиа/контент/галерею/нав — «блоки страницы
- * кейса» из DESIGN.md §4. Ссылка «На главную» этим приёмом не помечена —
- * она мелкий навигационный элемент в одну строку, а не блок. CaseMedia,
- * CaseGallery и CaseNav — самостоятельные компоненты без своего data-reveal
- * внутри (переиспользуются и на главной, и в подвале, где отдельная
- * анимация появления не нужна — CaseRow.astro уже помечает d-reveal всю
- * строку целиком, а подвал вообще исключён карточкой), поэтому здесь
- * обёрнуты в свои <div data-reveal> снаружи, без правок самих компонентов.
+ * P11-T5: data-reveal на блоках страницы (DESIGN.md §4). Кнопки не
+ * помечены — это навигация в одну строку, а не блок.
  */
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import CaseMedia from '../../components/CaseMedia.astro';
-import CaseGallery from '../../components/CaseGallery.astro';
-import CaseNav from '../../components/CaseNav.astro';
-import { withBase } from '../../lib/url';
+import PillButton from '../../components/PillButton.astro';
+import QuoteCards from '../../components/QuoteCards.astro';
+import ScreensPanel from '../../components/ScreensPanel.astro';
+import { contacts } from '../../data/contacts.ts';
 
 export async function getStaticPaths() {
 	const works = await getCollection('works');
@@ -69,194 +47,255 @@ interface Props {
 }
 
 const { work } = Astro.props;
-const { title, year, role, segment, video, poster, images } = work.data;
+const { title, heading, video, poster, readingTime, blocks } = work.data;
 const { Content } = await render(work);
 
-const orderedWorks = (await getCollection('works')).sort((a, b) => a.data.order - b.data.order);
-const currentIndex = orderedWorks.findIndex((entry) => entry.id === work.id);
-const prevWork = currentIndex > 0 ? orderedWorks[currentIndex - 1] : undefined;
-const nextWork = currentIndex < orderedWorks.length - 1 ? orderedWorks[currentIndex + 1] : undefined;
+// Заголовок страницы кейса и подпись в ленте — разные строки макета.
+const pageHeading = heading ?? title;
 
+// Тот же адрес, что в шапке и подвале — DESIGN.md §3, «Контакты — один источник».
+const telegram = contacts.find((contact) => contact.icon === 'telegram');
+
+const hasBlocks = blocks.length > 0;
 ---
 
-<Base title={`${title} — Кирилл Колобанов`}>
-	<article class="container">
-		<div class="case-page case-block-width">
-			<div class="case-page__hero">
-				<header class="case-page__header" data-reveal>
-					<h1 class="case-page__title">{title}</h1>
-					<dl class="case-page__meta">
-						<div class="case-page__meta-item">
-							<dt>Год</dt>
-							<dd>{year}</dd>
-						</div>
-						<div class="case-page__meta-item">
-							<dt>Роль</dt>
-							<dd>{role}</dd>
-						</div>
-						<div class="case-page__meta-item">
-							<dt>Категория</dt>
-							<dd>{segment}</dd>
-						</div>
-					</dl>
-				</header>
+<Base title={`${title} — Кирилл Колобанов`} bareHeader>
+	<article class="container case">
+		<p class="case__back">
+			<PillButton label="На главную" href="/" icon="arrow-left" />
+		</p>
 
-				<div data-reveal>
-					<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
-				</div>
-			</div>
+		<h1 class="case__title" data-reveal>{pageHeading}</h1>
 
-			<div class="case-page__content" data-reveal>
-				<Content />
-			</div>
+		<div class="case__media" data-reveal>
+			<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+		</div>
 
+		{readingTime && <p class="case__reading-time" data-reveal>{readingTime}</p>}
+
+		{
+			hasBlocks
+				? blocks.map((block) => {
+						if (block.type === 'cards') {
+							return (
+								<div data-reveal>
+									<QuoteCards items={block.items} />
+								</div>
+							);
+						}
+
+						if (block.type === 'screens') {
+							return (
+								<div data-reveal>
+									<ScreensPanel screens={block.screens} label={block.label ?? title} />
+								</div>
+							);
+						}
+
+						if (block.type === 'scenario') {
+							return (
+								<section class="case-scenario" data-reveal>
+									<h3 class="case-scenario__title">{block.title}</h3>
+									<p class="case-scenario__body">{block.body}</p>
+									{block.screens.length > 0 && (
+										<div class="case-scenario__screens">
+											<ScreensPanel screens={block.screens} label={block.title} />
+										</div>
+									)}
+								</section>
+							);
+						}
+
+						return (
+							<section class="case-section" data-reveal>
+								<h2 class="case-section__title">{block.title}</h2>
+								{block.body && <p class="case-section__body">{block.body}</p>}
+								{block.items && block.items.length > 0 && (
+									<ul class="case-section__list">
+										{block.items.map((item) => (
+											<li>{item}</li>
+										))}
+									</ul>
+								)}
+							</section>
+						);
+					})
+				: (
+						<div class="case__markdown" data-reveal>
+							<Content />
+						</div>
+					)
+		}
+
+		<div class="case__cta">
+			<PillButton label="На главную" href="/" icon="arrow-left" />
 			{
-				images.length > 0 && (
-					<div data-reveal>
-						<CaseGallery images={images} title={title} />
-					</div>
+				telegram && (
+					<PillButton
+						label="Обсудить в Telegram"
+						href={telegram.href}
+						variant="solid"
+						external
+						hint=" (откроется в новом окне)"
+					/>
 				)
 			}
-
-			<div data-reveal>
-				<CaseNav prev={prevWork} next={nextWork} />
-			</div>
 		</div>
 	</article>
 </Base>
 
 <style>
 	/*
-	 * Правка 09.08.2026 по замечанию заказчика: «страницы, которые подключены
-	 * к карточкам внутри, тоже неказистые — небольшая картинка, надписи по
-	 * краям с равнением по левому центру, сделай красиво».
-	 *
-	 * Что было и почему выглядело так: содержимое шло во всю ширину
-	 * контейнера (1436px на 1536-м экране), а заголовок страницы стоял
-	 * в 24px — том же размере, что мелкая подпись карточки на главной.
-	 * Получалась строка текста от края до края под крошечным заголовком.
-	 *
-	 * Что стало: вся страница — одна колонка .case-block-width, ровно той же
-	 * ширины, что карточка кейса на главной. Переход с ленты на страницу
-	 * теперь не меняет ширину колонки, и это тот самый «единый блок».
+	 * Вертикальный ритм — DESIGN.md §2, «Шкала отступов страницы кейса».
+	 * Отступы держатся на margin-top у детей, а не на flex-gap: шаг между
+	 * блоками не один (32 по умолчанию, но 20 до медиа, 24 вокруг строки
+	 * времени, 48 до кнопок), и общий gap пришлось бы вычитать обратно
+	 * отрицательными полями. Флекс-контейнер при этом нужен: он отменяет
+	 * схлопывание полей, из-за которого margin первого ребёнка утекал бы
+	 * наружу статьи.
 	 */
-	.case-page {
-		/* Отступ от потолка — правка 13.08.2026: шапка налезала на заголовок
-		   кейса. Прежняя версия (коммит 39ba957) буквально скопировала приём
-		   .hero из Hero.astro — margin-top: --space-hero-top, а с 1024px
-		   минус высота шапки --space-sticky-header, чтобы контент затягивало
-		   под прозрачную шапку (она не в потоке отжимает, а стоит поверх).
-		   На главной в эту 30-пиксельную зону нахлёста (86-116px) попадает
-		   только фотография героя — она играет с шапкой в один приём z-index
-		   (Hero.astro, .hero__media) и не мешает читать текст. На странице
-		   кейса первым блоком идёт не фото, а сразу <h1> — тот же нахлёст
-		   утаскивал под шапку живой текст заголовка. Вычитание убрано,
-		   margin-top — просто --space-hero-top на всех размерах: так уже
-		   вело себя всё, что ниже 1024px, — отдельного правила не требовало. */
-		margin-top: var(--space-hero-top);
-		padding-bottom: var(--space-last-case-to-footer); /* тот же отступ, что перед подвалом на главной */
+	.case {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-case-to-case); /* между крупными блоками страницы — токен «кейс → кейс», своего в DESIGN.md нет */
+		padding-top: var(--space-header-top); /* верх страницы → кнопка «На главную», 60 в макете */
+		padding-bottom: var(--space-case-cta-bottom); /* кнопки → полоса подвала */
+	}
+
+	.case > * + * {
+		margin-top: var(--space-case-block);
 	}
 
 	/*
-	 * Первый шаг страницы: заголовок и картинка одним блоком, без пустоты
-	 * между ними — правка 09.08.2026 по замечанию заказчика: «в блоке должно
-	 * быть видно всё шагами, первый это картинка + надпись, сейчас пустота».
-	 *
-	 * Раньше ссылка «На главную», заголовок и медиа были прямыми детьми
-	 * .case-page и разделялись общим gap: var(--space-case-to-case) (80px)
-	 * ДВАЖДЫ — между ссылкой и заголовком, и между заголовком и медиа.
-	 * Токен «кейс → кейс» рассчитан на разделение самостоятельных секций
-	 * страницы (эту секцию от текста кейса, текст от галереи), а не связку
-	 * заголовка с его собственной иллюстрацией — отсюда и читалось как
-	 * разрыв, а не единый блок.
-	 *
-	 * Ссылка «На главную» выведена из вертикального ритма — это элемент
-	 * навигации, а не содержимое, ему нет смысла отъедать высоту у картинки.
-	 * position: relative на обёртке нужен, чтобы position: absolute у ссылки
-	 * (ниже) считался от неё, а не от предка выше по дереву.
-	 *
-	 * data-snap здесь был тем же приёмом, что у карточек кейсов на главной —
-	 * доводчик убран целиком по просьбе заказчика (PLAN-PATCH-2026-08-11.md,
-	 * B3), атрибут снят.
+	 * Ниже — исключения из шага «блок → блок». Селекторы обязательно
+	 * с `.case > `: Astro дописывает к каждому компаунду свой атрибут
+	 * области видимости, и правило `.case > * + *` весит четыре единицы
+	 * специфичности против двух у голого класса. Без родителя исключения
+	 * молча не срабатывали — проверено замером, медиа стояло на 32 вместо 20.
 	 */
-	/* Ссылка «На главную» отсюда убрана 09.08.2026: её обрезала плавающая
-	   шапка и по ней нельзя было попасть. Теперь это стеклянная кнопка
-	   в самой шапке слева, зеркально кнопке контактов (Header.astro),
-	   поэтому отступ сверху под неё здесь больше не нужен. */
-	.case-page__hero {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-subtitle-to-media); /* заголовок → медиа, тот же токен, что «подзаголовок → медиа» на главной — своей роли для этой пары в DESIGN.md нет */
+	.case > .case__media {
+		margin-top: var(--space-case-media); /* H1 → медиа */
 	}
 
-	/* Заголовок и метаданные — одна группа, разделённая волосяной линией:
-	   год, роль и категория читаются как подпись под названием работы,
-	   а не как ещё один абзац текста. */
-	.case-page__header {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-case-title-to-subtitle); /* заголовок → метаданные, токен «заголовок кейса → подзаголовок» */
+	.case > .case__reading-time {
+		margin-top: var(--space-case-note); /* медиа → строка времени */
 	}
 
-	.case-page__title {
-		font-family: var(--font-accent); /* дисплейная гарнитура — здесь и на имени в герое, больше нигде (tokens.css) */
-		/* Переиспользован токен «специализация» (60px по замеру макета).
-		   Своей роли «заголовок страницы кейса» в DESIGN.md §2 нет, а прежние
-		   24px — размер мелкой подписи в ленте, для заголовка страницы он мал.
-		   Тот же приём переиспользования уже измеренного значения, что
-		   применён для числа колонок сетки в P4-T3. */
-		font-size: var(--text-specialization-size);
-		line-height: var(--text-specialization-line-height);
-		font-weight: var(--text-name-weight); /* полужирное, как у имени: это заголовок страницы */
+	.case__reading-time {
+		color: var(--color-text-subtle);
+		font-size: var(--text-case-body-size);
+		line-height: var(--text-case-body-line-height);
+		font-weight: var(--text-case-body-weight);
 	}
 
-	.case-page__meta {
+	.case > .case__reading-time + * {
+		margin-top: var(--space-case-note); /* строка времени → первый раздел */
+	}
+
+	.case > .case__cta {
+		margin-top: var(--space-case-cta-top);
+	}
+
+	.case__cta {
 		display: flex;
 		flex-wrap: wrap;
-		gap: calc(var(--space-unit) * 8) calc(var(--space-unit) * 6); /* не задано в DESIGN.md, инженерный дефолт на базовой единице */
-		padding-top: var(--space-case-title-to-subtitle);
-		border-top: 1px solid var(--glass-border); /* волосяная линия — токен окантовки стекла, DESIGN.md §4; своего значения для разделителя в спецификации нет */
-		font-family: var(--font-body);
-		font-size: var(--text-pill-size);
+		align-items: center;
+		justify-content: space-between; /* в макете кнопки разведены по краям колонки: x=140 и правый край 1300 */
+		gap: var(--space-case-cards-gap);
 	}
 
-	.case-page__meta-item {
+	/* Кнопка «На главную» стоит в потоке первой; отступ сверху даёт
+	   padding-top контейнера, своего не нужно. */
+	.case__back {
 		display: flex;
-		flex-direction: column;
-		gap: calc(var(--space-unit) * 1);
 	}
 
-	.case-page__meta dt {
-		color: var(--color-text-muted);
-	}
-
-	.case-page__meta dd {
+	/*
+	 * Заголовок страницы набран тем же кеглем, что заголовки разделов
+	 * (Raleway SemiBold 32, [552:5596]) — это не упущение съёма, а решение
+	 * макета: страница кейса живёт без крупного титула.
+	 */
+	.case__title {
+		font-family: var(--font-body);
+		font-size: var(--text-case-section-size);
+		line-height: var(--text-case-section-line-height);
+		font-weight: var(--text-case-section-weight);
 		color: var(--color-text);
 	}
 
-	/* Подзаголовки «Задача / Решение / Результат» из markdown-тела (<h2>) —
-	   роли для них в DESIGN.md §2 нет (только «заголовок кейса» 24px для
-	   строки на главной). Переопределяет здесь же глобальное правило h2
-	   из typography.css (60px, роль «специализация» героя) — то правило
-	   для героя, не для тела кейса; повторно используются токены заголовка
-	   кейса, тем же приёмом, что и h1 этой страницы выше. */
-	.case-page__content :global(h2) {
-		font-family: var(--font-display);
-		font-size: var(--text-case-title-size);
-		line-height: var(--text-case-title-line-height);
-		font-weight: var(--text-case-title-weight);
-		margin-top: var(--space-case-to-case);
-		margin-bottom: var(--space-case-title-to-subtitle);
+	/* Hero-медиа кейса: 1160 × 650 на почти чёрном, радиус 32 [548:4884].
+	   Пропорцией, а не пикселями — колонка сужается вместе с окном.
+	   Базовое правило .case-media (layout.css) даёт 5:4 и светлую заглушку;
+	   тот же приём локального переопределения уже применён в CaseRow. */
+	.case :global(.case-media) {
+		aspect-ratio: 1160 / 650;
+		background-color: var(--color-surface-dark);
 	}
 
-	.case-page__content :global(h2:first-child) {
+	/* ── Текстовый раздел ──────────────────────────────────────────────── */
+	.case-section__title {
+		font-family: var(--font-body);
+		font-size: var(--text-case-section-size);
+		line-height: var(--text-case-section-line-height);
+		font-weight: var(--text-case-section-weight);
+		color: var(--color-text);
+	}
+
+	.case-section__body,
+	.case-section__list,
+	.case-scenario__body {
+		margin-top: var(--space-case-heading); /* заголовок → его собственный текст */
+		font-size: var(--text-case-body-size);
+		line-height: var(--text-case-body-line-height);
+		font-weight: var(--text-case-body-weight);
+		color: var(--color-text);
+	}
+
+	/* Абзацы «Конкурентов» разбиты переносом внутри одной строки данных —
+	   в макете это один текстовый блок с ручным переносом, не два абзаца. */
+	.case-section__body {
+		white-space: pre-line;
+	}
+
+	/* У раздела с вводной фразой и списком (Метрики, «Что бы я сделал ещё»)
+	   список идёт сразу за абзацем, без второго шага в 16. */
+	.case-section__body + .case-section__list {
+		margin-top: var(--space-case-heading);
+	}
+
+	.case-section__list {
+		padding-left: 1.25em; /* маркер не должен вылезать за левый край колонки */
+		list-style: disc;
+	}
+
+	/* ── Сценарий: подзаголовок, текст, панель экранов ─────────────────── */
+	.case-scenario__title {
+		font-family: var(--font-body);
+		font-size: var(--text-case-scenario-size);
+		line-height: var(--text-case-scenario-line-height);
+		font-weight: var(--text-case-scenario-weight);
+		color: var(--color-text);
+	}
+
+	.case-scenario__screens {
+		margin-top: var(--space-case-media); /* текст → медиа */
+	}
+
+	/* ── Запасной путь: кейс без blocks ────────────────────────────────── */
+	.case__markdown :global(h2) {
+		font-family: var(--font-body);
+		font-size: var(--text-case-section-size);
+		line-height: var(--text-case-section-line-height);
+		font-weight: var(--text-case-section-weight);
+		margin-top: var(--space-case-block);
+	}
+
+	.case__markdown :global(h2:first-child) {
 		margin-top: 0;
 	}
 
-	.case-page__content :global(p) {
-		color: var(--color-text-subtle); /* тот же цвет, что подзаголовок кейса на главной, единственный заданный текстовый цвет для длинного текста */
+	.case__markdown :global(p) {
+		margin-top: var(--space-case-heading);
+		font-size: var(--text-case-body-size);
+		line-height: var(--text-case-body-line-height);
 	}
 </style>

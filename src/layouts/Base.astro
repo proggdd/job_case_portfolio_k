@@ -30,9 +30,15 @@ import { withBase } from '../lib/url';
 
 interface Props {
 	title: string;
+	/*
+	 * Страница кейса просит шапку без кнопок: от 768px она не рисуется
+	 * вовсе (макет [552:1006]), мобильная полоса с бургером остаётся.
+	 * Подробности — в Header.astro.
+	 */
+	bareHeader?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, bareHeader = false } = Astro.props;
 // пути — через общий withBase (src/lib/url.ts)
 ---
 
@@ -47,7 +53,7 @@ const { title } = Astro.props;
 		<title>{title}</title>
 	</head>
 	<body>
-		<Header />
+		<Header bare={bareHeader} />
 		<main>
 			<slot />
 		</main>
