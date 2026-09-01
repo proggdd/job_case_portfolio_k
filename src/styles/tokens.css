@@ -36,70 +36,22 @@
  * Взяты только два сабсета, кириллица и латиница: 19 + 48 КБ.
  */
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Raleway';
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('../assets/fonts/inter-cyrillic.woff2') format('woff2');
+  src: url('../assets/fonts/raleway-cyrillic.woff2') format('woff2');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Raleway';
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('../assets/fonts/inter-latin.woff2') format('woff2');
+  src: url('../assets/fonts/raleway-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-/*
- * Дисплейная гарнитура — Jost, переменное начертание 400–700.
- * Заменила Oswald 11.08.2026 (PLAN-C-HERO-FONTS-2026-08-11.md, C5) —
- * решение заказчика: Jost вместо платного Futura Md BT из макета,
- * который на публичный GitHub Pages выложить нельзя без лицензии.
- * Oswald был временным выбором исполнителя («подбирай сам», 09.08.2026)
- * на время ожидания ответа заказчика — тот же геометрический узкий
- * гротеск закрывал ту же задачу.
- *
- * Задача та же: дать рамке характер, не навязав его работам. Заказчик
- * зафиксировал требование универсальности — «работы будут разные, дизайн
- * сайта должен быть универсальным». Из этого следуют три ограничения,
- * по которым выбиралась замена:
- *
- * 1. Гарнитура не должна задавать настроение. Выразительные дисплейные
- *    шрифты (геометрические с характерными формами, контрастные антиквы)
- *    отпадают: они переживут одну работу и начнут спорить со следующей.
- * 2. Она стоит рядом с чужой типографикой. Заголовок кейса лежит прямо
- *    над постером, а на постерах у Кирилла своя крупная надпись. Поэтому
- *    дисплейная гарнитура применяется ТОЛЬКО к имени в герое и заголовку
- *    страницы кейса — там, где рядом нет медиа. Заголовки в ленте остаются
- *    на Inter, чтобы два дисплейных шрифта не встали друг на друга.
- * 3. Узкое начертание решает попутную задачу: имя «Кирилл Колобанов»
- *    на Inter в 80px переносилось на две строки в колонке 688px.
- *
- * Jost: свободная лицензия OFL, полная кириллица (сабсет проверен —
- * диапазоны совпадают с уже принятыми у Inter), геометрический гротеск
- * той же узкой плакатной подачи, что и Oswald. 9.9 и 26 КБ на два сабсета.
- */
-@font-face {
-  font-family: 'Jost';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('../assets/fonts/jost-cyrillic.woff2') format('woff2');
-  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-
-@font-face {
-  font-family: 'Jost';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('../assets/fonts/jost-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 :root {
@@ -160,9 +112,9 @@
                     Намеренно не применяется к заголовкам кейсов в ленте:
                     они стоят вплотную к постеру со своей крупной надписью,
                     и два дисплейных шрифта подряд конфликтуют. */
-  --font-body: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: 'Raleway', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-body);
-  --font-accent: 'Jost', var(--font-body);
+  --font-accent: var(--font-body);
 
   /* Единица шкалы — DESIGN.md §5 «Масштабирование по формату экрана»
      ✅ добавлено 09.08.2026 по решению заказчика («не понимаю, почему масштаб
