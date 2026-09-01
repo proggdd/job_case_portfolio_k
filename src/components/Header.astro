@@ -560,18 +560,35 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 
 <script>
 	/*
-	 * Мобильное меню — патч T4 Т3. Открытие и закрытие по кнопке #menu,
-	 * закрытие по Escape с возвратом фокуса, блокировка прокрутки фона
-	 * при открытой панели. Морфинг иконки добавляется в Т4.
+	 * Мобильное меню и морфинг бургера — патч T4.
+	 *
+	 * Строки морфинга — импорт Menu/X из lucide и присваивание icon.icon —
+	 * согласованы с заказчиком дословно (§4 Т4), логика не менялась.
+	 * К ним пристроены открытие/закрытие панели по тому же aria-expanded,
+	 * Escape с возвратом фокуса и блокировка прокрутки фона (§4 Т3).
+	 *
+	 * prefers-reduced-motion: морфинг гасится атрибутом reducedMotion="user"
+	 * на <MorphIcon> (morphicons по умолчанию "never" и игнорирует ОС) —
+	 * при системной reduce-motion присваивание icon.icon меняет контур
+	 * мгновенно, само меню продолжает работать.
+	 *
+	 * Иконка одна на оба состояния: закрытому в макете отвечает
+	 * Burger-Icon 28×19.73, открытому — ci:close-lg 32×32; morphicons
+	 * морфит один контур, поэтому взят компромисс 28×28 (size на MorphIcon).
 	 */
+	import { Menu, X } from 'lucide';
+	import type { MorphIconElement } from 'morphicons/element';
+
 	const menuButton = document.querySelector<HTMLButtonElement>('#menu');
 	const menuPanel = document.querySelector<HTMLElement>('#menu-panel');
+	const menuIcon = menuButton?.querySelector<MorphIconElement>('morph-icon') ?? null;
 
 	if (menuButton && menuPanel) {
 		const setMenu = (open: boolean) => {
 			menuButton.setAttribute('aria-expanded', String(open));
 			menuPanel.hidden = !open;
 			document.body.style.overflow = open ? 'hidden' : '';
+			if (menuIcon) menuIcon.icon = open ? X : Menu; // присваивание свойства запускает анимацию
 		};
 
 		menuButton.addEventListener('click', () => {
