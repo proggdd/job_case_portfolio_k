@@ -114,12 +114,6 @@ const href = withBase(`works/${work.id}/`);
 		font-size: var(--text-case-row-title-size);
 		line-height: var(--text-case-title-line-height);
 		font-weight: var(--text-case-title-weight);
-		transition: color 250ms ease-out; /* DESIGN.md §4 «Строка кейса»: hover 250мс ease-out */
-	}
-
-	.case-row__link:hover .case-row__title,
-	.case-row__link:focus-visible .case-row__title {
-		color: var(--color-text-muted); /* DESIGN.md §4: подсветка заголовка */
 	}
 
 	.case-row__subtitle {
@@ -159,11 +153,18 @@ const href = withBase(`works/${work.id}/`);
 		transition: background-color 180ms ease;
 	}
 
-	.case-row__link:hover .case-row__cta {
+	/* Правка 01.09.2026 по замечанию заказчика: «при наведении на кейс
+	   убрать серость подписи, реагировать должна только кнопка при наведении
+	   мышкой на неё». Ховер снят с блока-ссылки и переведён на саму кнопку,
+	   подсветка заголовка (--color-text-muted) убрана целиком.
+	   :focus-visible остаётся на ссылке: с клавиатуры курсора нет, и кроме
+	   рамки блока показать нажимаемый элемент нечем. */
+	.case-row__cta:hover,
+	.case-row__link:focus-visible .case-row__cta {
 		background-color: var(--color-accent-hover);
 	}
 
-	.case-row__link:active .case-row__cta {
+	.case-row__cta:active {
 		background-color: var(--color-accent-active);
 		transition-duration: 0ms;
 	}
