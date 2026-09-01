@@ -66,6 +66,8 @@
  * логика подписки достроена под многократное срабатывание. Плюс
  * document.visibilitychange — пауза в фоновой вкладке.
  */
+import MorphIcon from 'morphicons/astro';
+import { Menu } from 'lucide';
 import { contacts } from '../data/contacts.ts';
 import { withBase } from '../lib/url';
 
@@ -103,6 +105,17 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 				</a>
 			)}
 		</nav>
+
+		{/*
+		 * Кнопка-бургер — патч T4, только мобильная раскладка (<768px).
+		 * Разметка согласована с заказчиком (патч §4 Т2). Добавлены два
+		 * атрибута MorphIcon: size={28} — компромисс 28×19.73/32×32 из §4 Т4;
+		 * reducedMotion="user" — иначе morphicons по умолчанию "never"
+		 * и игнорирует системный prefers-reduced-motion (критерий §4 Т4).
+		 */}
+		<button id="menu" type="button" aria-label="Toggle menu" aria-expanded="false">
+			<MorphIcon icon={Menu} size={28} reducedMotion="user" />
+		</button>
 	</div>
 </header>
 
@@ -339,6 +352,56 @@ const avatarVideo = withBase('media/header/portrait-loop.mp4');
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border: 0;
+	}
+
+	/*
+	 * ─── Мобильная шапка — патч T4, раскладка ниже 768px ──────────────────
+	 * Числа из выгрузки Figma css_571-5444 (секция «Мобилка сайта»,
+	 * прислана заказчиком 01.09): полоса 393×64 фоном --color-text
+	 * (Rectangle 240661932), бокс бургера 48×48 на x=329 y=8 от края 393
+	 * (Header/Burger), иконка белая.
+	 * Десктоп не трогается: все правки внутри медиазапроса, базовое
+	 * правило #menu только гасит кнопку.
+	 */
+	#menu {
+		display: none; /* десктоп: бургера в макете нет */
+	}
+
+	@media (max-width: 767.98px) {
+		.site-header {
+			padding-top: 0; /* полоса от верха экрана, высота ровно 64 */
+			background-color: var(--color-text);
+		}
+
+		.site-header__inner {
+			min-height: 64px; /* аватар и кнопки скрыты — высоту держит полоса */
+			padding-inline: 16px; /* бокс 48 на x=329 от края 393 → зазор справа 16 */
+			justify-content: flex-end;
+		}
+
+		.avatar-media,
+		.site-header__actions {
+			display: none; /* в мобильном макете их нет; разметка нужна десктопу */
+		}
+
+		#menu {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 48px;
+			height: 48px;
+			padding: 0;
+			border: 0;
+			background-color: transparent;
+			color: var(--color-bg); /* currentColor → белый штрих иконки */
+			cursor: pointer;
+			flex-shrink: 0;
+		}
+
+		#menu:focus-visible {
+			outline: 2px solid var(--color-bg);
+			outline-offset: 2px;
+		}
 	}
 </style>
 
