@@ -7,19 +7,10 @@
  * были абсолютными без учёта base ('/job_case_portfolio_k') и давали 404
  * на проде (замечено в JOURNAL после P3-T2).
  *
- * P11-T2: [data-viewport-sentinel] — невидимый маркер высотой в один экран
- * в самом начале body. Header.astro наблюдает за ним через IntersectionObserver,
- * чтобы понять, что пользователь пролистал дальше первого экрана (DESIGN.md
- * §4: «скролл > высоты героя»), — единый триггер работает и на главной
- * (где это буквально высота героя), и на странице кейса/404, где героя нет
- * вовсе, но шапка обязана вести себя так же. position: absolute без
- * позиционированного предка ставит его в начало документа и не смещает
- * остальную вёрстку (containing block — не body, а вся страница).
- *
- * P11-T3: подвал несёт навигацию «На главную» (DESIGN.md §3) — Base.astro
- * прокидывает showHomeLink, везде true, кроме главной (незачем вести
- * с главной на главную). Пропс nextWork убран 09.08.2026 вместе со
- * «Следующий проект» в подвале — см. комментарий в Footer.astro.
+ * Сентинелы P11-T2/T3 и плавающие кнопки убраны 01.09.2026: их читал
+ * только FloatingControls (кнопка «Наверх»), а его в макете нет. Шапка
+ * (патч T4) за прокруткой не следит, подвал больше не несёт ссылки
+ * «На главную» — проп showHomeLink удалён по всей цепочке.
  *
  * P11-T5: глобальный наблюдатель анимаций появления (DESIGN.md §4). Один
  * IntersectionObserver на всё дерево [data-reveal] — компонент сам решает,
@@ -35,16 +26,13 @@ import '../styles/layout.css';
 import '../styles/reveal.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import FloatingControls from '../components/FloatingControls.astro';
 import { withBase } from '../lib/url';
 
 interface Props {
 	title: string;
-	/** Ссылка «На главную» в шапке и подвале. По умолчанию true — снята только на самой главной. */
-	showHomeLink?: boolean;
 }
 
-const { title, showHomeLink = true } = Astro.props;
+const { title } = Astro.props;
 // пути — через общий withBase (src/lib/url.ts)
 ---
 
@@ -57,39 +45,13 @@ const { title, showHomeLink = true } = Astro.props;
 		<link rel="icon" href={withBase('favicon.ico')} />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
-		<style>
-			.viewport-sentinel {
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 1px;
-				height: 100vh; /* один экран — приближение «высоты героя» без зависимости от того, есть ли герой на странице */
-				pointer-events: none;
-			}
-
-			/* Второй, короткий сентинел — для сворачивания панели контактов.
-			   Кнопка «наверх» по-прежнему смотрит на экранный сентинел выше:
-			   ей появляться сразу незачем, наверх и так близко. А панель
-			   должна сворачиваться, едва страница тронулась с места. */
-			.header-sentinel {
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 1px;
-				height: var(--space-sticky-header);
-				pointer-events: none;
-			}
-		</style>
 	</head>
 	<body>
-		<div class="viewport-sentinel" data-viewport-sentinel aria-hidden="true"></div>
-		<div class="header-sentinel" data-header-sentinel aria-hidden="true"></div>
 		<Header />
 		<main>
 			<slot />
 		</main>
-		<Footer showHomeLink={showHomeLink} />
-		<FloatingControls />
+		<Footer />
 		<script>
 			/*
 			 * P11-T5: появление блоков при скролле. Один общий наблюдатель на все
