@@ -53,9 +53,7 @@ blocks:
   - type: screens
     label: "Материалы интервью с респондентами"
     screens:
-      - media/iq-auto/screens/respondents-1.webp
-      - media/iq-auto/screens/respondents-2.webp
-      - media/iq-auto/screens/respondents-3.webp
+      - media/iq-auto/panels/01.webp
 
   - type: section
     title: "Инсайты"
@@ -93,47 +91,37 @@ blocks:
     title: "Поиск и выбор автомобиля"
     body: "Главный экран ведёт к выбору автомобиля через акционный оффер или каталог. Дальше пользователь задаёт условия аренды в фильтрах и получает автомобили с сохранёнными параметрами выбора."
     screens:
-      - media/iq-auto/screens/search-1.webp
-      - media/iq-auto/screens/search-2.webp
-      - media/iq-auto/screens/search-3.webp
+      - media/iq-auto/panels/02.webp
 
   - type: scenario
     title: "Условия аренды"
     body: "Пользователь заранее понимает стоимость и условия аренды, поэтому может принять решение без дополнительных уточнений."
     screens:
-      - media/iq-auto/screens/terms-1.webp
-      - media/iq-auto/screens/terms-2.webp
+      - media/iq-auto/panels/03.webp
 
   - type: scenario
     title: "Оформление аренды"
     body: "До оплаты фиксируются выбранные условия и итоговая сумма, чтобы стоимость не менялась на следующих шагах."
     screens:
-      - media/iq-auto/screens/checkout-1.webp
-      - media/iq-auto/screens/checkout-2.webp
-      - media/iq-auto/screens/checkout-3.webp
+      - media/iq-auto/panels/04.webp
 
   - type: scenario
     title: "Оплата аренды"
     body: "Сценарий завершает оформление аренды внутри приложения: после оплаты автомобиль закрепляется за пользователем, а интерфейс переводит его в статус ожидания доставки."
     screens:
-      - media/iq-auto/screens/payment-1.webp
-      - media/iq-auto/screens/payment-2.webp
+      - media/iq-auto/panels/05.webp
 
   - type: scenario
     title: "Активная аренда"
     body: "Активная аренда остаётся доступна с главного экрана, чтобы быстро проверить статус поездки и самостоятельно запустить возврат."
     screens:
-      - media/iq-auto/screens/active-1.webp
-      - media/iq-auto/screens/active-2.webp
-      - media/iq-auto/screens/active-3.webp
+      - media/iq-auto/panels/06.webp
 
   - type: scenario
     title: "Возврат автомобиля"
     body: "Пользователь отслеживает путь менеджера и понимает, когда он приедет за автомобилем. После передачи машины аренда фиксируется как завершённая."
     screens:
-      - media/iq-auto/screens/return-1.webp
-      - media/iq-auto/screens/return-2.webp
-      - media/iq-auto/screens/return-3.webp
+      - media/iq-auto/panels/07.webp
 
   - type: section
     title: "Результаты"
