@@ -39,7 +39,13 @@
 - Rust-компилятор строгий: все непустые теги закрывать, невалидную вложенность он не исправляет.
 - Content Layer API: путь строится из `entry.id`, поля `slug` нет.
 - `src/fetch.ts` — зарезервированное имя, не создавать.
-- Плагины remark/rehype не подключать: Markdown рендерит Sätteri.
+- Markdown-тело (`<Content />`) рендерит Sätteri, не remark. Подключён один
+  плагин — `nbspMdastPlugin` (visitor `text` по узлам mdast) в
+  `astro.config.mjs`: неразрывные пробелы, DESIGN.md §2, решение архитектора
+  02.09.2026. Механизм свой; `@astrojs/markdown-satteri` и `satteri` уже стоят
+  как процессор по умолчанию, ничего не устанавливается. Внешние пакеты
+  remark/rehype не ставить: `markdown.remarkPlugins` теперь требует установки
+  `@astrojs/markdown-remark`, а это лишнее дерево зависимостей.
 
 ## Медиа
 

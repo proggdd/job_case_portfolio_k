@@ -14,37 +14,40 @@
  */
 import Base from '../layouts/Base.astro';
 import { contacts } from '../data/contacts.ts';
+import { typo } from '../lib/typo';
 ---
 
 <Base title="Контакты — Кирилл Колобанов">
 	<div class="container contacts-page">
-		<h1 class="contacts-page__title" data-reveal>Контакты</h1>
+		<h1 class="contacts-page__title" data-reveal><span class="reveal__inner">Контакты</span></h1>
 		<p class="contacts-page__note" data-reveal style="--reveal-delay: 90ms">
-			Открыт к предложениям — пишите удобным способом.
+			<span class="reveal__inner">{typo('Открыт к предложениям — пишите удобным способом.')}</span>
 		</p>
 
 		<ul class="contacts-page__list">
 			{
 				contacts.map((contact, index) => (
 					<li data-reveal style={`--reveal-delay: ${180 + index * 90}ms`}>
-						<a
-							class="contacts-page__link"
-							href={contact.href}
-							target={contact.external ? '_blank' : undefined}
-							rel={contact.external ? 'noopener noreferrer' : undefined}
-						>
-							<span>{contact.label}</span>
-							<svg width="24" height="24" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-								<path
-									d="M4 12L12 4M8 4H12V8"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"></path>
-							</svg>
-							{contact.external && <span class="visually-hidden">(откроется в новом окне)</span>}
-						</a>
+						<span class="reveal__inner">
+							<a
+								class="contacts-page__link"
+								href={contact.href}
+								target={contact.external ? '_blank' : undefined}
+								rel={contact.external ? 'noopener noreferrer' : undefined}
+							>
+								<span>{typo(contact.label)}</span>
+								<svg width="24" height="24" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+									<path
+										d="M4 12L12 4M8 4H12V8"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+										stroke-linejoin="round"></path>
+								</svg>
+								{contact.external && <span class="visually-hidden">(откроется в новом окне)</span>}
+							</a>
+						</span>
 					</li>
 				))
 			}
@@ -84,13 +87,12 @@ import { contacts } from '../data/contacts.ts';
 		border-radius: var(--radius-pill-group);
 		background-color: var(--glass-bg);
 		border: 1px solid var(--glass-border);
-		box-shadow: var(--glass-shadow);
 		backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
 		-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
 		font-size: var(--text-case-title-size);
 		text-decoration: none;
 		color: var(--color-text);
-		transition: transform 250ms ease-out, box-shadow 250ms ease-out;
+		transition: transform 250ms ease-out; /* box-shadow снят 02.09.2026, DESIGN.md §4 */
 	}
 
 	.contacts-page__link:hover,

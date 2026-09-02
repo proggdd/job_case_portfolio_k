@@ -32,6 +32,7 @@
 import type { CollectionEntry } from 'astro:content';
 import CaseMedia from './CaseMedia.astro';
 import { withBase } from '../lib/url';
+import { typo } from '../lib/typo';
 
 interface Props {
 	work: CollectionEntry<'works'>;
@@ -45,16 +46,18 @@ const href = withBase(`works/${work.id}/`);
 ---
 
 <li class="case-row" data-reveal>
-	<a class="case-row__link case-block-width" href={href}>
-		<div class="case-row__header">
-			<div class="case-row__text">
-				<h3 class="case-row__title">{title}</h3>
-				<p class="case-row__subtitle">{summary}</p>
+	<span class="reveal__inner">
+		<a class="case-row__link case-block-width" href={href}>
+			<div class="case-row__header">
+				<div class="case-row__text">
+					<h3 class="case-row__title">{typo(title)}</h3>
+					<p class="case-row__subtitle">{typo(summary)}</p>
+				</div>
+				<span class="case-row__cta">Подробнее</span>
 			</div>
-			<span class="case-row__cta">Подробнее</span>
-		</div>
-		<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager={eager} />
-	</a>
+			<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager={eager} />
+		</a>
+	</span>
 </li>
 
 <style>
@@ -146,7 +149,7 @@ const href = withBase(`works/${work.id}/`);
 		white-space: nowrap;
 		background-color: var(--color-accent);
 		color: var(--color-bg);
-		box-shadow: var(--shadow-button-solid);
+		/* Тень снята 02.09.2026 (DESIGN.md §4: теней в макете нет). */
 		/* B4 (PLAN-PATCH-2026-08-11.md), тот же диагноз и то же лекарство,
 		   что у .header-button (Header.astro): асимметричный тайминг —
 		   мгновенный вход в нажатие, 180мс ease на возврат. */

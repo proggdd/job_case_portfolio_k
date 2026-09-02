@@ -36,21 +36,31 @@
  */
 import Base from '../layouts/Base.astro';
 import { withBase } from '../lib/url';
+import { typo } from '../lib/typo';
 
 const base = withBase('');
 ---
 
 <Base title="Страница не найдена — Кирилл Колобанов">
 	<div class="container not-found" data-reveal>
-		<p class="not-found__code" aria-hidden="true">404</p>
-		<h1 class="not-found__title">Страница не найдена</h1>
-		<p class="not-found__text">Такой страницы не существует — возможно, ссылка устарела.</p>
-		<a class="not-found__link" href={base}>← На главную</a>
+		<div class="reveal__inner not-found__inner">
+			<p class="not-found__code" aria-hidden="true">404</p>
+			<h1 class="not-found__title">{typo('Страница не найдена')}</h1>
+			<p class="not-found__text">{typo('Такой страницы не существует — возможно, ссылка устарела.')}</p>
+			<a class="not-found__link" href={base}>{typo('← На главную')}</a>
+		</div>
 	</div>
 </Base>
 
 <style>
-	.not-found {
+	/*
+	 * Раскладку четырёх строк ведёт .not-found__inner, а не сам [data-reveal]:
+	 * DESIGN.md §4, «наблюдатель и трансформ — разные элементы» (02.09.2026).
+	 * На внешнем .not-found остаётся только роль .container (ширина, поля).
+	 * min-height переезжает внутрь вместе с флексом — иначе justify-content:
+	 * center центрировать нечему.
+	 */
+	.not-found__inner {
 		min-height: 50vh;
 		display: flex;
 		flex-direction: column;

@@ -117,6 +117,7 @@
  * При prefers-reduced-motion остаётся статичный постер.
  */
 import { withBase } from '../lib/url';
+import { typo } from '../lib/typo';
 
 const poster = withBase('media/avatar/head-poster.webp');
 const video = withBase('media/avatar/head.mp4');
@@ -136,9 +137,9 @@ const video = withBase('media/avatar/head.mp4');
 			tabindex="-1"></video>
 	</div>
 
-	<p class="hero__role">UX/UI дизайнер</p>
-	<h1 class="hero__name">Кирилл Колобанов</h1>
-	<p class="hero__meta">3 года опыта • B2B, B2C</p>
+	<p class="hero__role">{typo('UX/UI дизайнер')}</p>
+	<h1 class="hero__name">{typo('Кирилл Колобанов')}</h1>
+	<p class="hero__meta">{typo('3 года опыта • B2B, B2C')}</p>
 </section>
 
 <style>

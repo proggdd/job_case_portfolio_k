@@ -33,6 +33,7 @@ import PillButton from '../../components/PillButton.astro';
 import QuoteCards from '../../components/QuoteCards.astro';
 import ScreensPanel from '../../components/ScreensPanel.astro';
 import { contacts } from '../../data/contacts.ts';
+import { typo } from '../../lib/typo';
 
 export async function getStaticPaths() {
 	const works = await getCollection('works');
@@ -51,7 +52,28 @@ const { title, heading, video, poster, readingTime, blocks } = work.data;
 const { Content } = await render(work);
 
 // Заголовок страницы кейса и подпись в ленте — разные строки макета.
-const pageHeading = heading ?? title;
+// Неразрывные пробелы — DESIGN.md §2, бриф P12-R2 §3.2: правка идёт по строкам
+// данных в момент рендера. Тело блоков прогоняется целиком, поля-пути
+// (screens) не трогаются. markdown-тело обрабатывает remark-плагин.
+const pageHeading = typo(heading ?? title);
+const displayReadingTime = readingTime ? typo(readingTime) : undefined;
+const displayBlocks = blocks.map((block) => {
+	switch (block.type) {
+		case 'section':
+			return {
+				...block,
+				title: typo(block.title),
+				body: block.body ? typo(block.body) : block.body,
+				items: block.items?.map(typo),
+			};
+		case 'cards':
+			return { ...block, items: block.items.map(typo) };
+		case 'scenario':
+			return { ...block, title: typo(block.title), body: typo(block.body) };
+		default:
+			return block;
+	}
+});
 
 // Тот же адрес, что в шапке и подвале — DESIGN.md §3, «Контакты — один источник».
 const telegram = contacts.find((contact) => contact.icon === 'telegram');
@@ -65,21 +87,29 @@ const hasBlocks = blocks.length > 0;
 			<PillButton label="На главную" href="/" icon="arrow-left" />
 		</p>
 
-		<h1 class="case__title" data-reveal>{pageHeading}</h1>
+		<h1 class="case__title" data-reveal><span class="reveal__inner">{pageHeading}</span></h1>
 
 		<div class="case__media" data-reveal>
-			<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+			<div class="reveal__inner">
+				<CaseMedia video={video} poster={poster} alt={`Превью кейса «${title}»`} eager />
+			</div>
 		</div>
 
-		{readingTime && <p class="case__reading-time" data-reveal>{readingTime}</p>}
+		{displayReadingTime && (
+			<p class="case__reading-time" data-reveal>
+				<span class="reveal__inner">{displayReadingTime}</span>
+			</p>
+		)}
 
 		{
 			hasBlocks
-				? blocks.map((block) => {
+				? displayBlocks.map((block) => {
 						if (block.type === 'cards') {
 							return (
 								<div data-reveal>
-									<QuoteCards items={block.items} />
+									<div class="reveal__inner">
+										<QuoteCards items={block.items} />
+									</div>
 								</div>
 							);
 						}
@@ -87,7 +117,9 @@ const hasBlocks = blocks.length > 0;
 						if (block.type === 'screens') {
 							return (
 								<div data-reveal>
-									<ScreensPanel screens={block.screens} label={block.label ?? title} />
+									<div class="reveal__inner">
+										<ScreensPanel screens={block.screens} label={block.label ?? title} />
+									</div>
 								</div>
 							);
 						}
@@ -95,34 +127,40 @@ const hasBlocks = blocks.length > 0;
 						if (block.type === 'scenario') {
 							return (
 								<section class="case-scenario" data-reveal>
-									<h3 class="case-scenario__title">{block.title}</h3>
-									<p class="case-scenario__body">{block.body}</p>
-									{block.screens.length > 0 && (
-										<div class="case-scenario__screens">
-											<ScreensPanel screens={block.screens} label={block.title} />
-										</div>
-									)}
+									<div class="reveal__inner">
+										<h3 class="case-scenario__title">{block.title}</h3>
+										<p class="case-scenario__body">{block.body}</p>
+										{block.screens.length > 0 && (
+											<div class="case-scenario__screens">
+												<ScreensPanel screens={block.screens} label={block.title} />
+											</div>
+										)}
+									</div>
 								</section>
 							);
 						}
 
 						return (
 							<section class="case-section" data-reveal>
-								<h2 class="case-section__title">{block.title}</h2>
-								{block.body && <p class="case-section__body">{block.body}</p>}
-								{block.items && block.items.length > 0 && (
-									<ul class="case-section__list">
-										{block.items.map((item) => (
-											<li>{item}</li>
-										))}
-									</ul>
-								)}
+								<div class="reveal__inner">
+									<h2 class="case-section__title">{block.title}</h2>
+									{block.body && <p class="case-section__body">{block.body}</p>}
+									{block.items && block.items.length > 0 && (
+										<ul class="case-section__list">
+											{block.items.map((item) => (
+												<li>{item}</li>
+											))}
+										</ul>
+									)}
+								</div>
 							</section>
 						);
 					})
 				: (
 						<div class="case__markdown" data-reveal>
-							<Content />
+							<div class="reveal__inner">
+								<Content />
+							</div>
 						</div>
 					)
 		}
