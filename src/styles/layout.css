@@ -19,21 +19,27 @@
  * решения — JOURNAL.md, запись 11.08.2026.
  */
 
+/*
+ * Общий множитель геометрии --zoom (tokens.css) действует и здесь: поля
+ * контейнера, его максимум и ширина блока кейса — это числа макета,
+ * которые не заводились токенами. Кегли и межстрочные не трогаются.
+ */
+
 .container {
   width: 100%;
   margin-inline: auto;
-  padding-inline: 20px; /* мобильный, DESIGN.md §5 */
+  padding-inline: calc(20px * var(--zoom)); /* мобильный, DESIGN.md §5 */
 }
 
 @media (min-width: 600px) {
   .container {
-    padding-inline: 32px; /* планшет, DESIGN.md §5 */
+    padding-inline: calc(32px * var(--zoom)); /* планшет, DESIGN.md §5 */
   }
 }
 
 @media (min-width: 1024px) {
   .container {
-    max-width: 1440px; /* макет 1440, DESIGN.md §5 */
+    max-width: calc(1440px * var(--zoom)); /* макет 1440, DESIGN.md §5 */
     /* C6 (PLAN-C-HERO-FONTS-2026-08-11.md): 50 → var(--space-content-padding)
        (80px) — даёт контент ровно 1280px при ширине 1440, то есть
        --content-max-width. Раньше здесь стоял хардкод, случайно
@@ -84,7 +90,7 @@
  * во всю ширину контейнера — заголовок слева, год у правого края экрана.
  */
 .case-block-width {
-  width: min(
+  width: calc(min(
     100%,
     calc(
       (
@@ -98,7 +104,7 @@
             var(--space-case-row-bottom)
         ) * 1160 / 670
     )
-  );
+  ) * var(--zoom));
   margin-inline: auto; /* при ограничении по высоте карточка уже контейнера — держим по центру */
 }
 

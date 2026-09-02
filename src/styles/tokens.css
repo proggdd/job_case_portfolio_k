@@ -131,6 +131,29 @@
      выигрывает вторая ветка и вся шкала сжимается по высоте.
      svh, а не vh: на мобильных скрывающаяся адресная строка меняет vh
      и дёргает раскладку. */
+  /* Общий коэффициент масштаба геометрии — решение заказчика 02.09.2026:
+     «сделай масштаб абсолютно всего на 0.9, чтобы всё лучше влазило;
+     шрифт и его размер не трогай».
+
+     Что он множит: ВСЕ токены --size-*, --space-*, --radius-* и
+     --content-max-width. То есть вся геометрия страницы — поля, отступы,
+     ширина контента, бокс аватара, высота кнопок, скругления, сетка
+     карточек — сжимается на 10% разом.
+
+     Чего он НЕ множит, намеренно:
+     - --text-* (кегли и межстрочные): прямое условие задачи;
+     - --scale и --scale-hero: это единицы шкалы, на них висит и
+       типографика. Множитель стоит на потребителях-геометрии, а не на
+       самой единице, иначе кегли уехали бы вместе с ней;
+     - --space-header-side (ссылка на --space-content-padding) и
+       --space-sticky-header (сумма двух уже сжатых токенов): они
+       считаются из уже умноженных значений, второе умножение дало бы 0.81;
+     - нулевые токены и волосяные линии 1px (границы, обводки фокуса):
+       множить нечего, а 0.9px на ретине даёт грязный край.
+
+     Возврат к прежнему размеру — правка одной строки: --zoom: 1. */
+  --zoom: 0.9;
+
   --scale: min(1vw, 1.6svh);
 
   /* Единица первого экрана — DESIGN.md §5, добавлено 09.08.2026 по коду
@@ -240,7 +263,7 @@
   --text-case-row-title-size: clamp(20px, calc(2.22 * var(--scale)), 32px);
   --text-case-row-subtitle-size: clamp(16px, calc(1.67 * var(--scale)), 24px);
   --text-case-row-subtitle-line-height: 1.2; /* макет: межстрочный 120% */
-  --size-case-row-subtitle-max-width: calc(40.76 * var(--scale));
+  --size-case-row-subtitle-max-width: calc((calc(40.76 * var(--scale))) * var(--zoom));
 
   /* Отступы блока — отметки макета «Frame 2147225381» (1440×900):
      строка заголовка 40-88 (высота 48 задана кнопкой --size-header-control,
@@ -248,8 +271,8 @@
      медиа 190-860. Заголовок -> подзаголовок: 100 - 88 = 12.
      Подзаголовок -> медиа: 190 - 158 = 32. Коэффициенты те же /14.4:
      12/14.4 = 0.83, 32/14.4 = 2.22. Прежние 16 и 36 — из макета Т5. */
-  --space-case-row-title-to-subtitle: min(12px, 0.83vw);
-  --space-case-row-subtitle-to-media: min(32px, 2.22vw);
+  --space-case-row-title-to-subtitle: calc((min(12px, 0.83vw)) * var(--zoom));
+  --space-case-row-subtitle-to-media: calc((min(32px, 2.22vw)) * var(--zoom));
 
   /* Поля блока кейса сверху и снизу — макет «Frame 2147225381»: от верха
      блока до строки заголовка 40, от низа медиа до низа блока
@@ -258,8 +281,8 @@
      на нём же, не на --scale-hero). Верхнее поле стоит в
      .case-row.padding-top, нижнее вычитается в формуле .case-block-width
      (layout.css) — раньше там стоял чужой токен «шапка -> герой» (20px). */
-  --space-case-row-top: calc(2.78 * var(--scale));
-  --space-case-row-bottom: calc(2.78 * var(--scale));
+  --space-case-row-top: calc((calc(2.78 * var(--scale))) * var(--zoom));
+  --space-case-row-bottom: calc((calc(2.78 * var(--scale))) * var(--zoom));
 
   /* Правка 05.08.2026 по прямому запросу пользователя («слишком маленькие
      кнопки и шрифт») — увеличено с clamp(14px, 1.39vw, 20px). Коэффициент
@@ -298,13 +321,13 @@
      сжимается пропорционально экрану. --space-photo-to-name (0px) и
      --space-case-title-to-subtitle (12px) не масштабируются: слишком малы,
      чтобы создавать проблему на узких экранах. */
-  --space-unit: 4px;
+  --space-unit: calc((4px) * var(--zoom));
   /* C6 (PLAN-C-HERO-FONTS-2026-08-11.md): поля приведены к макету —
      1340 → 1280, 50 → 80. --space-header-side больше не своё число,
      а ссылка на этот токен: поле контента и поле шапки теперь одно
      значение, а не два случайно совпадающих. */
-  --content-max-width: 1160px;
-  --space-content-padding: clamp(16px, calc(11.81vw - 30.06px), 140px);
+  --content-max-width: calc((1160px) * var(--zoom));
+  --space-content-padding: calc((clamp(16px, calc(11.81vw - 30.06px), 140px)) * var(--zoom));
 
   /* Ширина видео-аватара — DESIGN.md §5.
      Три ограничения: замер макета, ширина контейнера и высота окна.
@@ -318,7 +341,7 @@
      grid-колонку, а в колонке `auto` процент считать не от чего — колонка
      разворачивалась до внутреннего размера постера, 1240px (замер 09.08).
      Ограничение по ширине даёт сама сетка через minmax(0, …) в Hero.astro. */
-  --size-hero-avatar: min(620px, 68.9svh);
+  --size-hero-avatar: calc((min(620px, 68.9svh)) * var(--zoom));
 
   /* Аватар героя. Отдельной страховки «сколько осталось от высоты окна»
      не нужно: --scale-hero сам содержит высотную ветку min(1vw, 1.8svh),
@@ -339,14 +362,14 @@
      Высота (458px, коэффициент 31.81) токеном не задаётся — выводится из
      ширины через aspect-ratio: 1108 / 916 на .hero__media. Голова внутри
      бокса рендерится высотой 447.7px против 448 в макете. */
-  --size-hero-avatar-centered: min(100%, calc(38.47 * var(--scale-hero)));
+  --size-hero-avatar-centered: calc((min(100%, calc(38.47 * var(--scale-hero)))) * var(--zoom));
 
   /* Ширина капсулы контактов в свёрнутом состоянии — замер 09.08.2026:
      широчайшая пилюля «Телеграм» 172px плюс боковые поля капсулы 2×12px.
      Задана явно, потому что от неё зависит не только сама капсула, но и
      правый отступ героя: без него плавающая капсула наезжала на аватар
      (свободного места справа от аватара было 77px против нужных 196). */
-  --size-contact-panel: 196px;
+  --size-contact-panel: calc((196px) * var(--zoom));
 
   /* Шапка — геометрия по коду макета из Figma 09.08.2026: аватар и кнопки
      44×44 на отметке 60px от верха, поле по бокам 80px, зазор между
@@ -363,18 +386,18 @@
      от --space-case-row-top, а не отсюда. Токен остаётся: на нём стоит
      отрицательный отступ героя (Hero.astro, ≥1024px). Поля снизу у шапки
      нет: её нижняя граница совпадает с нижним краем кнопок, как в макете. */
-  --space-header-top: min(60px, 4.17vw);
+  --space-header-top: calc((min(60px, 4.17vw)) * var(--zoom));
   --space-header-side: var(--space-content-padding); /* C6: одно поле на шапку и контент, только от 1024px — ниже действует шкала полей из layout.css */
   /* DESIGN.md §2, редакция 31.08: кнопки шапки 48px (узлы 561:7446,
      561:7448, 561:9305). Отменяет 56 из плана Т2. Высота не масштабируется:
      это ещё и минимальная зона нажатия. */
-  --size-header-control: 48px;
-  --space-header-gap: 16px;
+  --size-header-control: calc((48px) * var(--zoom));
+  --space-header-gap: calc((16px) * var(--zoom));
   /* 20 → 24 — план Т4, «Общее для обеих» кнопок героя. */
-  --space-header-button-padding: 24px;
+  --space-header-button-padding: calc((24px) * var(--zoom));
   --space-sticky-header: calc(var(--space-header-top) + var(--size-header-control));
 
-  --space-header-to-hero: min(20px, 1.39vw);
+  --space-header-to-hero: calc((min(20px, 1.39vw)) * var(--zoom));
 
   /* Вертикаль первого экрана — пересчитана 01.09.2026 по DESIGN.md §2,
      «Композиция первого экрана — не две колонки». Отметки макета
@@ -411,35 +434,35 @@
      Прежняя редакция 11.08.2026 (зазор +44, бокс 554×458, поле снизу 48)
      считала высоту бокса от пропорции видеофайла, а не от макета; снята
      сверкой 01.09. */
-  --space-hero-top: calc(5.97 * var(--scale-hero));
-  --space-hero-avatar-to-role: calc(3.06 * var(--scale-hero));
-  --space-hero-role-to-name: clamp(8px, calc(6.51px + 0.381vw), calc(0.833 * var(--scale-hero)));
-  --space-hero-name-to-meta: clamp(16px, calc(13.03px + 0.762vw), calc(1.667 * var(--scale-hero)));
-  --space-hero-bottom: calc(3.33 * var(--scale-hero));
+  --space-hero-top: calc((calc(5.97 * var(--scale-hero))) * var(--zoom));
+  --space-hero-avatar-to-role: calc((calc(3.06 * var(--scale-hero))) * var(--zoom));
+  --space-hero-role-to-name: calc((clamp(8px, calc(6.51px + 0.381vw), calc(0.833 * var(--scale-hero)))) * var(--zoom));
+  --space-hero-name-to-meta: calc((clamp(16px, calc(13.03px + 0.762vw), calc(1.667 * var(--scale-hero)))) * var(--zoom));
+  --space-hero-bottom: calc((calc(3.33 * var(--scale-hero))) * var(--zoom));
 
   /* Прежние отступы героя. Первый экран на них больше не стоит, но
      --space-name-to-specialization держит 404-ю, а
      --space-specialization-to-segments — страницу контактов. */
   --space-photo-to-name: 0px;
-  --space-name-to-specialization: min(32px, 2.22vw);
-  --space-specialization-to-segments: min(32px, 2.22vw);
-  --space-segments-to-first-case: min(80px, 5.56vw); /* унифицировано с шагом «кейс → кейс», см. DESIGN.md §2 */
-  --space-case-title-to-subtitle: 12px;
-  --space-subtitle-to-media: min(32px, 2.22vw);
-  --space-case-to-case: min(80px, 5.56vw);
-  --space-last-case-to-footer: min(199px, 13.82vw);
+  --space-name-to-specialization: calc((min(32px, 2.22vw)) * var(--zoom));
+  --space-specialization-to-segments: calc((min(32px, 2.22vw)) * var(--zoom));
+  --space-segments-to-first-case: calc((min(80px, 5.56vw)) * var(--zoom)); /* унифицировано с шагом «кейс → кейс», см. DESIGN.md §2 */
+  --space-case-title-to-subtitle: calc((12px) * var(--zoom));
+  --space-subtitle-to-media: calc((min(32px, 2.22vw)) * var(--zoom));
+  --space-case-to-case: calc((min(80px, 5.56vw)) * var(--zoom));
+  --space-last-case-to-footer: calc((min(199px, 13.82vw)) * var(--zoom));
 
   /* Скругления — DESIGN.md §2, «Скругления» ✅ измерено */
-  --radius-pill-group: 24px;
-  --radius-pill: 12px;
+  --radius-pill-group: calc((24px) * var(--zoom));
+  --radius-pill: calc((12px) * var(--zoom));
   /* 16 → 32 — план Т1, раздел 2 «Что изменилось»: медиа-рамка блока кейса. */
-  --radius-media: 32px;
+  --radius-media: calc((32px) * var(--zoom));
   --radius-footer-top: 0px;
   /* Кнопки шапки — borderRadius 100 из кода макета Figma 09.08.2026.
      При высоте 44px это полная капсула. Значение оставлено макетным,
      а не заменено на 999px: правило «значения берём из спецификации
      буквально» важнее привычной идиомы. */
-  --radius-pill-full: 100px;
+  --radius-pill-full: calc((100px) * var(--zoom));
 
   /* Тень кнопок шапки — boxShadow 0px 1px 2px rgba(0,0,0,0.16) из кода
      макета Figma 09.08.2026. Смещение и размытие есть, это край,
@@ -522,32 +545,32 @@
   /* Шкала отступов. Все пары — из таблицы DESIGN.md §2; десктопные значения
      получены вычитанием координат по 05-screens.md. Поле сверху страницы
      своего токена не заводит: 60 в макете совпадает с --space-header-top. */
-  --space-case-block: clamp(24px, calc(21.03px + 0.762vw), 32px); /* блок → блок */
-  --space-case-heading: 16px; /* заголовок → его собственный текст, 16 на обоих концах */
-  --space-case-media: 20px; /* текст → медиа и H1 → медиа, 20 на обоих концах */
-  --space-case-note: 24px; /* медиа → строка времени прочтения и она же → первый раздел */
-  --space-case-cards-gap: 20px; /* между карточками-цитатами, по обеим осям */
-  --space-case-screens-gap: 80px; /* между экранами в ряду; на мобайле рядов нет */
-  --space-case-cta-top: 48px; /* последний текст → нижняя пара кнопок */
-  --space-case-cta-bottom: clamp(40px, calc(32.57px + 1.905vw), 60px); /* кнопки → полоса подвала: 40 на мобайле, 60 на десктопе */
+  --space-case-block: calc((clamp(24px, calc(21.03px + 0.762vw), 32px)) * var(--zoom)); /* блок → блок */
+  --space-case-heading: calc((16px) * var(--zoom)); /* заголовок → его собственный текст, 16 на обоих концах */
+  --space-case-media: calc((20px) * var(--zoom)); /* текст → медиа и H1 → медиа, 20 на обоих концах */
+  --space-case-note: calc((24px) * var(--zoom)); /* медиа → строка времени прочтения и она же → первый раздел */
+  --space-case-cards-gap: calc((20px) * var(--zoom)); /* между карточками-цитатами, по обеим осям */
+  --space-case-screens-gap: calc((80px) * var(--zoom)); /* между экранами в ряду; на мобайле рядов нет */
+  --space-case-cta-top: calc((48px) * var(--zoom)); /* последний текст → нижняя пара кнопок */
+  --space-case-cta-bottom: calc((clamp(40px, calc(32.57px + 1.905vw), 60px)) * var(--zoom)); /* кнопки → полоса подвала: 40 на мобайле, 60 на десктопе */
 
   /* Геометрия карточки-цитаты и панели экранов — DESIGN.md §3. */
-  --radius-case-card: 20px; /* мобильное значение [561:6935]; десктопные 24 — в медиазапросе внизу файла */
-  --size-case-card-min-height: 171px; /* минимум, не константа: на узкой колонке текст переносится в четыре строки */
-  --size-case-card-padding: 16px;
-  --size-case-card-text: 525px; /* колонка текста внутри карточки; правое поле 29 из макета — следствие этого ограничения, а не своё значение */
-  --size-case-card-icon: 35px;
-  --size-case-screen: 251px; /* ширина экрана приложения; высота 510 задаётся пропорцией в компоненте */
+  --radius-case-card: calc((20px) * var(--zoom)); /* мобильное значение [561:6935]; десктопные 24 — в медиазапросе внизу файла */
+  --size-case-card-min-height: calc((171px) * var(--zoom)); /* минимум, не константа: на узкой колонке текст переносится в четыре строки */
+  --size-case-card-padding: calc((16px) * var(--zoom));
+  --size-case-card-text: calc((525px) * var(--zoom)); /* колонка текста внутри карточки; правое поле 29 из макета — следствие этого ограничения, а не своё значение */
+  --size-case-card-icon: calc((35px) * var(--zoom));
+  --size-case-screen: calc((251px) * var(--zoom)); /* ширина экрана приложения; высота 510 задаётся пропорцией в компоненте */
 
   /* Кнопка-капсула вне шапки — DESIGN.md §3, «Кнопка „На главную“ и нижний
      CTA». У шапки свои поля (24) и своя высота; здесь вторичная кнопка
      несёт поля 12/16 со значком, первичная — 16/24 без значка. */
-  --space-button-padding-outline: 16px;
-  --space-button-padding-solid: 24px;
-  --space-button-icon-gap: 8px;
-  --size-button-height: 48px;
-  --size-button-icon: 24px;
-  --size-button-border: 1.5px;
+  --space-button-padding-outline: calc((16px) * var(--zoom));
+  --space-button-padding-solid: calc((24px) * var(--zoom));
+  --space-button-icon-gap: calc((8px) * var(--zoom));
+  --size-button-height: calc((48px) * var(--zoom));
+  --size-button-icon: calc((24px) * var(--zoom));
+  --size-button-border: calc((1.5px) * var(--zoom));
 }
 
 
@@ -570,15 +593,15 @@
    оправдать. */
 @media (min-width: 1024px) {
   :root {
-    --space-hero-avatar-to-role: calc(-1.944 * var(--scale-hero));
-    --space-hero-bottom: calc(2.778 * var(--scale-hero));
+    --space-hero-avatar-to-role: calc((calc(-1.944 * var(--scale-hero))) * var(--zoom));
+    --space-hero-bottom: calc((calc(2.778 * var(--scale-hero))) * var(--zoom));
 
     /* Карточка-цитата: два значения, которые интерполяцией не выражаются.
        Радиус 24 на десктопе [530:7143] против 20 на мобайле [561:6935],
        межстрочный 28/18 = 1.556 против 1.4 [530:7144] [561:6939].
        Брейкпоинт тот же 1024, что и у зазора героя выше — второго числа
        под ту же смену раскладки в проекте нет. */
-    --radius-case-card: 24px;
+    --radius-case-card: calc((24px) * var(--zoom));
     --text-case-quote-line-height: 1.556;
   }
 }

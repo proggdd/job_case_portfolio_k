@@ -167,18 +167,18 @@ const { bare = false } = Astro.props;
 		gap: var(--space-header-gap);
 		width: 100%;
 		margin-inline: auto;
-		padding-inline: 20px;
+		padding-inline: calc(20px * var(--zoom));
 	}
 
 	@media (min-width: 600px) {
 		.site-header__inner {
-			padding-inline: 32px;
+			padding-inline: calc(32px * var(--zoom));
 		}
 	}
 
 	@media (min-width: 1024px) {
 		.site-header__inner {
-			max-width: 1440px; /* макет 1440: 1440 - 2×80 даёт контент 1280 */
+			max-width: calc(1440px * var(--zoom)); /* макет 1440: 1440 - 2×80 даёт контент 1280 */
 			padding-inline: var(--space-header-side);
 		}
 	}
@@ -355,8 +355,8 @@ const { bare = false } = Astro.props;
 		}
 
 		.site-header__inner {
-			min-height: 64px; /* аватар и кнопки скрыты — высоту держит полоса */
-			padding-inline: 16px; /* бокс 48 на x=329 от края 393 → зазор справа 16 */
+			min-height: calc(64px * var(--zoom)); /* аватар и кнопки скрыты — высоту держит полоса */
+			padding-inline: calc(16px * var(--zoom)); /* бокс 48 на x=329 от края 393 → зазор справа 16 */
 			justify-content: flex-end;
 		}
 
@@ -370,8 +370,8 @@ const { bare = false } = Astro.props;
 			justify-content: center;
 			position: relative;
 			z-index: 21; /* над панелью (20) — крестик открытого меню виден и нажимается */
-			width: 48px;
-			height: 48px;
+			width: calc(48px * var(--zoom));
+			height: calc(48px * var(--zoom));
 			padding: 0;
 			border: 0;
 			background-color: transparent;
@@ -390,9 +390,9 @@ const { bare = false } = Astro.props;
 			position: fixed;
 			inset: 0 0 auto 0;
 			z-index: 20; /* над полосой шапки (z-index 10) */
-			height: 553px;
+			height: calc(553px * var(--zoom));
 			max-height: 100dvh;
-			padding-top: 64px; /* пункты идут под полосой, y=64 */
+			padding-top: calc(64px * var(--zoom)); /* пункты идут под полосой, y=64 */
 			background-color: var(--color-text);
 			overflow-y: auto;
 		}
@@ -404,8 +404,8 @@ const { bare = false } = Astro.props;
 		.menu-panel__item {
 			display: flex;
 			align-items: center;
-			height: 48px;
-			padding-inline: 16px; /* x=16 */
+			height: calc(48px * var(--zoom));
+			padding-inline: calc(16px * var(--zoom)); /* x=16 */
 			font-weight: 500;
 			font-size: 20px;
 			line-height: 1;
@@ -429,9 +429,9 @@ const { bare = false } = Astro.props;
 		}
 
 		.menu-panel__photo {
-			margin: 18px 16px 0; /* x=16; от конца пункта 2 (y=160) до фото (y=178) */
-			width: calc(100% - 32px);
-			max-width: 361px; /* бокс 361×351 */
+			margin: calc(18px * var(--zoom)) calc(16px * var(--zoom)) 0; /* x=16; от конца пункта 2 (y=160) до фото (y=178) */
+			width: calc(100% - calc(32px * var(--zoom)));
+			max-width: calc(361px * var(--zoom)); /* бокс 361×351 */
 			aspect-ratio: 361 / 351;
 			border-radius: var(--radius-media); /* «скругление как у медиа» */
 			overflow: hidden;
